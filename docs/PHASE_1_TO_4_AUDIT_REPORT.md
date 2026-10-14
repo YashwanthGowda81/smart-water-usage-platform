@@ -1,6 +1,6 @@
 # Phase 1 to 4 Comprehensive Audit Report
 **Project:** Development of a Smart Water Usage Monitoring and Automated Billing Management Platform  
-**Repository:** `C:\Users\kavya\.gemini\antigravity\scratch\smart-water-usage-platform`  
+**Repository:** `.`  
 **Audit Date:** October 13, 2026  
 **Auditor:** Senior Full-Stack Software Engineer & Software Architect  
 

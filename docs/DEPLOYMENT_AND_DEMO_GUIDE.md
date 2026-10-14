@@ -84,7 +84,7 @@ Test-NetConnection -ComputerName localhost -Port 5432
 ### Step 2: Start the Backend Service
 Navigate to the `backend` folder and launch via Maven:
 ```powershell
-cd C:\Users\kavya\.gemini\antigravity\scratch\smart-water-usage-platform\backend
+cd backend
 mvn clean spring-boot:run
 ```
 The backend service will boot on `http://localhost:8080`.
@@ -93,7 +93,7 @@ The backend service will boot on `http://localhost:8080`.
 ### Step 3: Start the Frontend Application
 In a separate terminal, navigate to the `frontend` folder and run Vite:
 ```powershell
-cd C:\Users\kavya\.gemini\antigravity\scratch\smart-water-usage-platform\frontend
+cd frontend
 npm run dev
 ```
 The frontend application will be accessible at `http://localhost:5173`.
