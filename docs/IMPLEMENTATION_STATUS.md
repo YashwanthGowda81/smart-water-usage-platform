@@ -31,18 +31,19 @@
 | **Benchmarking**| Peer Household Benchmarking | `GET /api/benchmarking/my-household` | `/resident/benchmarking` | **COMPLETE & TESTED** | Compares household consumption to building average and occupancy-normalized percentiles. |
 | **Notif** | Resident Notification Center | `GET/PUT /api/notifications` | `/resident/notifications` | **COMPLETE & TESTED** | In-app alerts for high usage, leak anomalies, and published billing statements. |
 | **UI** | Public Information Website | Static React Router | `/`, `/about`, `/features`, `/how-it-works`, `/water-saving` | **COMPLETE & TESTED** | Comprehensive responsive public website introducing the platform with role-based entry links. |
-| **QA** | Backend Automated Test Suite | Maven Surefire / JUnit 5 | N/A | **COMPLETE & TESTED** | 37 automated tests passing across 10 test suites (0 failures, 0 errors). |
+| **QA** | Backend Automated Test Suite | Maven Surefire / JUnit 5 | N/A | **COMPLETE & TESTED** | 38 automated tests passing across 10 test suites (0 failures, 0 errors). |
 | **QA** | Frontend Production Build | Vite 5 | N/A | **COMPLETE & TESTED** | 922 modules compiled cleanly into minified production assets (`dist/`). |
 
 ---
 
 ## 2. Tested & Verified Matrix
 
-All 37 automated tests pass consistently:
+All 38 automated tests pass consistently:
 1. `AnomalyDetectionServiceTest`: Statistical anomaly evaluation and threshold scoring.
 2. `AuthControllerTest`: Controller role forcing on resident/owner registration and login endpoints.
-3. `AuthServiceTest` (12 tests):
+3. `AuthServiceTest` (13 tests):
    - First-owner bootstrap registration.
+   - Atomic concurrency locking for first-admin bootstrap.
    - Second admin public registration rejection (HTTP 403).
    - Resident registration success with enforced `Role.RESIDENT`.
    - Duplicate email registration rejection (HTTP 409).

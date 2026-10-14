@@ -8,6 +8,7 @@ import com.smartwater.repository.HouseholdRepository;
 import com.smartwater.repository.UserRepository;
 import com.smartwater.repository.WaterUsageLogRepository;
 import com.smartwater.service.AnomalyDetectionService;
+import com.smartwater.service.EmailService;
 import com.smartwater.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ class AnomalyDetectionServiceTest {
 
     @Mock
     private NotificationService notificationService;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private AnomalyDetectionService anomalyDetectionService;

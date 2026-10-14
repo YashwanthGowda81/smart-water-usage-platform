@@ -29,6 +29,7 @@ public class AnomalyDetectionService {
     private final HouseholdRepository householdRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     @Transactional
     public List<AnomalyEventDto> evaluateHouseholdAnomalies(Long householdId) {
@@ -82,15 +83,29 @@ public class AnomalyDetectionService {
                 String flatNum = hh != null ? hh.getFlatNumber() : "Unit";
 
                 for (User r : residents) {
+                    String alertTitle = "⚠️ Potential Water Leak Alert - Flat " + flatNum;
+                    String alertMessage = String.format("Abnormal water consumption of %.2f kL observed on %s. Historical baseline: %.2f kL (Threshold: %.2f kL). Please check plumbing for leaks.",
+                            latestValue, latest.getReadingDate(), mean, threshold);
+
                     notificationService.createNotification(
                             r.getId(),
                             hh != null && hh.getApartment() != null ? hh.getApartment().getId() : null,
                             householdId,
                             "ANOMALY_ALERT",
-                            "⚠️ Potential Water Leak Alert - Flat " + flatNum,
-                            String.format("Abnormal water consumption of %.2f kL observed on %s. Historical baseline: %.2f kL (Threshold: %.2f kL). Please check plumbing for leaks.",
-                                    latestValue, latest.getReadingDate(), mean, threshold)
+                            alertTitle,
+                            alertMessage
                     );
+
+                    if (r.getEmail() != null && !r.getEmail().isBlank()) {
+                        String emailBody = String.format("Dear Resident,\n\n" +
+                                "An abnormal water consumption of %.2f kL was detected on %s for Flat %s.\n\n" +
+                                "Historical baseline: %.2f kL\n" +
+                                "Calculated threshold: %.2f kL\n\n" +
+                                "Please inspect your taps, toilets, and internal plumbing for potential leaks to avoid excess charges and water wastage.\n\n" +
+                                "Smart Water Usage Monitoring Platform",
+                                latestValue, latest.getReadingDate(), flatNum, mean, threshold);
+                        emailService.sendEmail(r.getEmail(), alertTitle, emailBody);
+                    }
                 }
             }
         }

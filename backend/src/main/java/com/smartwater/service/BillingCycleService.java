@@ -31,6 +31,9 @@ public class BillingCycleService {
     private final TariffPlanService tariffPlanService;
     private final SharedCostAllocationService sharedCostAllocationService;
     private final ApartmentRepository apartmentRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
 
     @Transactional
     public BillingCycleDto createBillingCycle(CreateBillingCycleRequest request) {
@@ -183,6 +186,54 @@ public class BillingCycleService {
 
         cycle.setStatus(BillingCycleStatus.FINALIZED);
         BillingCycle finalizedCycle = billingCycleRepository.save(cycle);
+
+        // Dispatch notifications and emails to all residents whose bills were finalized
+        List<HouseholdBill> bills = householdBillRepository.findByBillingCycleId(cycleId);
+        for (HouseholdBill bill : bills) {
+            Household hh = householdRepository.findById(bill.getHouseholdId()).orElse(null);
+            String flatNum = hh != null ? hh.getFlatNumber() : "Unit";
+            List<User> residents = userRepository.findByHouseholdId(bill.getHouseholdId());
+
+            for (User resident : residents) {
+                String title = "📄 Water Bill Published - " + finalizedCycle.getPeriodStart() + " to " + finalizedCycle.getPeriodEnd();
+                String message = String.format("Your water bill for Flat %s is now available. Total Payable: ₹%.2f (Due Date: %s). Metered Consumption: %.2f kL.",
+                        flatNum, bill.getTotalPayable(), bill.getDueDate(), bill.getMeteredConsumptionKl());
+
+                notificationService.createNotification(
+                        resident.getId(),
+                        finalizedCycle.getApartmentId(),
+                        bill.getHouseholdId(),
+                        "BILL_PUBLISHED",
+                        title,
+                        message
+                );
+
+                if (resident.getEmail() != null && !resident.getEmail().isBlank()) {
+                    String residentName = resident.getName() != null ? resident.getName() : "Resident";
+                    String emailBody = String.format("Dear %s,\n\n" +
+                            "Your water bill for Flat %s covering billing cycle %s to %s has been finalized.\n\n" +
+                            "Consumption: %.2f kL\n" +
+                            "Tariff Charges: ₹%.2f\n" +
+                            "Shared Bulk Water Charges: ₹%.2f\n" +
+                            "Total Payable: ₹%.2f\n" +
+                            "Due Date: %s\n\n" +
+                            "You can log in to your resident portal to view and download your itemized PDF invoice.\n\n" +
+                            "Smart Water Usage Monitoring and Automated Billing Management Platform",
+                            residentName,
+                            flatNum,
+                            finalizedCycle.getPeriodStart(),
+                            finalizedCycle.getPeriodEnd(),
+                            bill.getMeteredConsumptionKl(),
+                            bill.getProgressiveTariffCharge(),
+                            bill.getSharedCostAllocation(),
+                            bill.getTotalPayable(),
+                            bill.getDueDate());
+
+                    emailService.sendEmail(resident.getEmail(), title, emailBody);
+                }
+            }
+        }
+
         return mapToDto(finalizedCycle);
     }
 

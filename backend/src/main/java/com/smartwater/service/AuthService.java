@@ -22,6 +22,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
 
+    private static final Object ADMIN_BOOTSTRAP_LOCK = new Object();
+
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String normalizedEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
@@ -31,14 +33,27 @@ public class AuthService {
 
         Role userRole = Role.RESIDENT;
         if (request.getRole() == Role.ADMIN) {
-            // Secure Owner Bootstrap Process:
-            // The first owner may be created ONLY when no administrator currently exists in the system.
-            // Once an administrator exists, public registration cannot create additional ADMIN accounts.
-            boolean adminExists = userRepository.existsByRole(Role.ADMIN);
-            if (!adminExists) {
-                userRole = Role.ADMIN;
-            } else {
-                throw new UnauthorizedException("An administrator already exists. Public registration of additional administrator accounts is disabled. Please contact your system administrator.");
+            // Thread-safe first-owner bootstrap: concurrent attempts cannot create multiple administrators
+            synchronized (ADMIN_BOOTSTRAP_LOCK) {
+                boolean adminExists = userRepository.existsByRole(Role.ADMIN);
+                if (adminExists) {
+                    throw new UnauthorizedException("An administrator already exists. Public registration of additional administrator accounts is disabled. Please contact your system administrator.");
+                }
+
+                User user = User.builder()
+                        .name(request.getName().trim())
+                        .email(normalizedEmail)
+                        .passwordHash(passwordEncoder.encode(request.getPassword()))
+                        .role(Role.ADMIN)
+                        .status(UserStatus.ACTIVE)
+                        .build();
+
+                User savedUser = userRepository.save(user);
+
+                return AuthResponse.builder()
+                        .message("Owner account registered successfully. Please proceed to the Owner Login page to sign in.")
+                        .user(mapToUserDto(savedUser))
+                        .build();
             }
         }
 
@@ -52,12 +67,8 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        String successMessage = userRole == Role.ADMIN
-                ? "Owner account registered successfully. Please proceed to the Owner Login page to sign in."
-                : "Resident account registered successfully. Please proceed to login.";
-
         return AuthResponse.builder()
-                .message(successMessage)
+                .message("Resident account registered successfully. Please proceed to login.")
                 .user(mapToUserDto(savedUser))
                 .build();
     }

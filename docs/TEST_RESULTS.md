@@ -7,7 +7,7 @@
 
 ## 1. Test Execution Summary
 
-- **Total Backend Tests Run:** 37
+- **Total Backend Tests Run:** 38
 - **Failures:** 0
 - **Errors:** 0
 - **Skipped:** 0
@@ -23,7 +23,7 @@
 | :--- | :--- | :---: | :---: | :---: | :--- |
 | `AnomalyDetectionServiceTest` | Analytics / Stats | 1 | 1 | 0 | Statistical spike identification against 30-day baseline mean + 2σ threshold |
 | `AuthControllerTest` | Security / Controller | 5 | 5 | 0 | Enforces server-side role assignment on registration and login endpoints |
-| `AuthServiceTest` | Security / Auth | 12 | 12 | 0 | First-owner bootstrap, second-admin rejection (403), resident role enforcement, duplicate email rejection (409), owner/resident portal validation, email normalization, inactive account rejection |
+| `AuthServiceTest` | Security / Auth | 13 | 13 | 0 | First-owner bootstrap, concurrent first-admin race condition handling (atomic lock), second-admin rejection (403), resident role enforcement, duplicate email rejection (409), owner/resident portal validation, email normalization, inactive account rejection |
 | `BillingCycleServiceTest` | Lifecycle / State | 4 | 4 | 0 | Cycle finalization, cycle archiving, prevention of recalculation when finalized |
 | `CsvUploadServiceTest` | Data Ingestion | 1 | 1 | 0 | CSV parsing, row format checks, continuity validation, error reporting |
 | `EndToEndWorkflowTest` | Integration / Billing | 1 | 1 | 0 | Full workflow: reading $\rightarrow$ consumption $\rightarrow$ progressive tariff $\rightarrow$ shared bulk cost $\rightarrow$ itemized billing |
@@ -33,8 +33,8 @@
 | `WaterUsageServiceTest` | Core Operations | 4 | 4 | 0 | Reading logging, meter ownership, non-decreasing reading enforcement |
 
 ### Total Test Metrics
-- **Tests run:** 37
-- **Passed:** 37
+- **Tests run:** 38
+- **Passed:** 38
 - **Failures:** 0
 - **Errors:** 0
 

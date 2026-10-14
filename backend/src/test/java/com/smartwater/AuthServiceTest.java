@@ -112,6 +112,51 @@ class AuthServiceTest {
     }
 
     @Test
+    void register_ConcurrentFirstAdminAttempts_OnlyOneSucceeds() throws Exception {
+        java.util.concurrent.atomic.AtomicBoolean adminCreated = new java.util.concurrent.atomic.AtomicBoolean(false);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByRole(Role.ADMIN)).thenAnswer(inv -> adminCreated.get());
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded_hash");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            adminCreated.set(true);
+            return user;
+        });
+
+        int numThreads = 10;
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(numThreads);
+        java.util.concurrent.CountDownLatch latch = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicInteger successes = new java.util.concurrent.atomic.AtomicInteger(0);
+        java.util.concurrent.atomic.AtomicInteger rejections = new java.util.concurrent.atomic.AtomicInteger(0);
+
+        for (int i = 0; i < numThreads; i++) {
+            final int id = i;
+            executor.submit(() -> {
+                try {
+                    latch.await();
+                    RegisterRequest req = RegisterRequest.builder()
+                            .name("Admin Attempt " + id)
+                            .email("admin" + id + "@smartwater.com")
+                            .password("password123")
+                            .role(Role.ADMIN)
+                            .build();
+                    authService.register(req);
+                    successes.incrementAndGet();
+                } catch (UnauthorizedException ex) {
+                    rejections.incrementAndGet();
+                } catch (Exception ignored) {
+                }
+            });
+        }
+
+        latch.countDown();
+        executor.shutdown();
+        assertTrue(executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS));
+
+        assertEquals(1, successes.get(), "Exactly one concurrent thread must succeed in bootstrapping the first admin");
+        assertEquals(numThreads - 1, rejections.get(), "All other concurrent attempts must be rejected with UnauthorizedException");
+    }
+
+    @Test
     void register_Resident_Success_WhenAdminAlreadyExists() {
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encoded_hash");

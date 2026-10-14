@@ -1,4 +1,4 @@
-﻿{
+{
   "info": {
     "name": "Smart Water Platform API Collection",
     "_postman_id": "b96a1e38-7f41-45ce-939e-21ef65dcae91",
@@ -10,27 +10,27 @@
       "name": "01 Authentication & Registration",
       "item": [
         {
-          "name": "Register Admin (Provisioning with Secret)",
+          "name": "Register First Owner (Bootstrap without Secret Key)",
           "request": {
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"fullName\": \"System Administrator\",\n  \"role\": \"ADMIN\",\n  \"apartmentId\": {{apartmentId}},\n  \"adminSecret\": \"{{adminSecretKey}}\"\n}"
+              "raw": "{\n  \"name\": \"System Administrator\",\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
             },
-            "url": {"raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"]}
+            "url": {"raw": "{{baseUrl}}/api/auth/register/owner", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register", "owner"]}
           }
         },
         {
-          "name": "Register Admin - Invalid Secret (Escalation Defense)",
+          "name": "Register Second Admin - Blocked After Bootstrap (Escalation Defense 403)",
           "request": {
             "method": "POST",
             "header": [{"key": "Content-Type", "value": "application/json"}],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"intruder@smartwater.local\",\n  \"password\": \"Hacker123!\",\n  \"fullName\": \"Intruder Escalation\",\n  \"role\": \"ADMIN\",\n  \"adminSecret\": \"WRONG_SECRET\"\n}"
+              "raw": "{\n  \"name\": \"Intruder Escalation\",\n  \"email\": \"intruder@smartwater.local\",\n  \"password\": \"Hacker123!\"\n}"
             },
-            "url": {"raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"]}
+            "url": {"raw": "{{baseUrl}}/api/auth/register/owner", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register", "owner"]}
           }
         },
         {

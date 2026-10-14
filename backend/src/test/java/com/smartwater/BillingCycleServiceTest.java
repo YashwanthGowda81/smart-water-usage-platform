@@ -7,6 +7,8 @@ import com.smartwater.exception.ResourceNotFoundException;
 import com.smartwater.repository.*;
 import com.smartwater.service.BillingCycleService;
 import com.smartwater.service.BulkWaterPurchaseService;
+import com.smartwater.service.EmailService;
+import com.smartwater.service.NotificationService;
 import com.smartwater.service.SharedCostAllocationService;
 import com.smartwater.service.TariffPlanService;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +54,15 @@ class BillingCycleServiceTest {
 
     @Mock
     private BillItemRepository billItemRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private NotificationService notificationService;
+
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private BillingCycleService billingCycleService;
