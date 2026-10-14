@@ -7,7 +7,7 @@
 
 ## 1. Test Execution Summary
 
-- **Total Backend Tests Run:** 38
+- **Total Backend Tests Run:** 64
 - **Failures:** 0
 - **Errors:** 0
 - **Skipped:** 0
@@ -22,19 +22,23 @@
 | Test Class | Category | Tests Run | Pass | Fail | Description |
 | :--- | :--- | :---: | :---: | :---: | :--- |
 | `AnomalyDetectionServiceTest` | Analytics / Stats | 1 | 1 | 0 | Statistical spike identification against 30-day baseline mean + 2σ threshold |
+| `ApartmentServiceTest` | Core / Community | 6 | 6 | 0 | Apartment onboarding, duplicate name validation, lookup by ID, listing, update, and deletion |
 | `AuthControllerTest` | Security / Controller | 5 | 5 | 0 | Enforces server-side role assignment on registration and login endpoints |
 | `AuthServiceTest` | Security / Auth | 13 | 13 | 0 | First-owner bootstrap, concurrent first-admin race condition handling (atomic lock), second-admin rejection (403), resident role enforcement, duplicate email rejection (409), owner/resident portal validation, email normalization, inactive account rejection |
-| `BillingCycleServiceTest` | Lifecycle / State | 4 | 4 | 0 | Cycle finalization, cycle archiving, prevention of recalculation when finalized |
-| `CsvUploadServiceTest` | Data Ingestion | 1 | 1 | 0 | CSV parsing, row format checks, continuity validation, error reporting |
+| `BillingCycleServiceTest` | Lifecycle / State | 4 | 4 | 0 | Cycle finalization, cycle archiving, prevention of recalculation when finalized, notification dispatch |
+| `CsvUploadServiceTest` | Data Ingestion | 2 | 2 | 0 | CSV parsing, row format checks, missing columns, continuity validation, duplicate detection, error reporting |
 | `EndToEndWorkflowTest` | Integration / Billing | 1 | 1 | 0 | Full workflow: reading $\rightarrow$ consumption $\rightarrow$ progressive tariff $\rightarrow$ shared bulk cost $\rightarrow$ itemized billing |
 | `HouseholdDataIsolationTest` | Security / Isolation | 4 | 4 | 0 | Cross-household isolation (residents denied access to other units), admin cross-unit access granted |
+| `HouseholdServiceTest` | Core / Unit Management | 6 | 6 | 0 | Household registration, apartment-scoped flat uniqueness, apartment lookup, update, deletion |
+| `MeterServiceTest` | Core / Metering | 6 | 6 | 0 | Meter configuration, unique serial validation, household binding, lookup by number |
 | `SharedCostAllocationServiceTest`| Financial / Math | 2 | 2 | 0 | Consumption-proportional allocation, area fallback, exact penny reconciliation |
 | `TariffPlanServiceTest` | Billing Engine | 3 | 3 | 0 | Multi-tier progressive bracket calculation, boundary handling, zero-usage handling |
-| `WaterUsageServiceTest` | Core Operations | 4 | 4 | 0 | Reading logging, meter ownership, non-decreasing reading enforcement |
+| `UserServiceTest` | Identity / Assignment | 5 | 5 | 0 | Resident apartment & household assignment, apartment validation, household-apartment mismatch rejection, profile updates |
+| `WaterUsageServiceTest` | Core Operations | 6 | 6 | 0 | Reading logging, non-decreasing continuity, bidirectional checks (lower than previous, higher than next), duplicate date rejection, subsequent reading auto-adjustment |
 
 ### Total Test Metrics
-- **Tests run:** 38
-- **Passed:** 38
+- **Tests run:** 64
+- **Passed:** 64
 - **Failures:** 0
 - **Errors:** 0
 

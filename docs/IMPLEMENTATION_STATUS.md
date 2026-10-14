@@ -31,17 +31,18 @@
 | **Benchmarking**| Peer Household Benchmarking | `GET /api/benchmarking/my-household` | `/resident/benchmarking` | **COMPLETE & TESTED** | Compares household consumption to building average and occupancy-normalized percentiles. |
 | **Notif** | Resident Notification Center | `GET/PUT /api/notifications` | `/resident/notifications` | **COMPLETE & TESTED** | In-app alerts for high usage, leak anomalies, and published billing statements. |
 | **UI** | Public Information Website | Static React Router | `/`, `/about`, `/features`, `/how-it-works`, `/water-saving` | **COMPLETE & TESTED** | Comprehensive responsive public website introducing the platform with role-based entry links. |
-| **QA** | Backend Automated Test Suite | Maven Surefire / JUnit 5 | N/A | **COMPLETE & TESTED** | 38 automated tests passing across 10 test suites (0 failures, 0 errors). |
+| **QA** | Backend Automated Test Suite | Maven Surefire / JUnit 5 | N/A | **COMPLETE & TESTED** | 64 automated tests passing across 14 test suites (0 failures, 0 errors). |
 | **QA** | Frontend Production Build | Vite 5 | N/A | **COMPLETE & TESTED** | 922 modules compiled cleanly into minified production assets (`dist/`). |
 
 ---
 
 ## 2. Tested & Verified Matrix
 
-All 38 automated tests pass consistently:
+All 64 automated tests pass consistently:
 1. `AnomalyDetectionServiceTest`: Statistical anomaly evaluation and threshold scoring.
-2. `AuthControllerTest`: Controller role forcing on resident/owner registration and login endpoints.
-3. `AuthServiceTest` (13 tests):
+2. `ApartmentServiceTest` (6 tests): Apartment community creation, duplicate name prevention, lookup, listing, update, and deletion.
+3. `AuthControllerTest` (5 tests): Controller role forcing on resident/owner registration and login endpoints.
+4. `AuthServiceTest` (13 tests):
    - First-owner bootstrap registration.
    - Atomic concurrency locking for first-admin bootstrap.
    - Second admin public registration rejection (HTTP 403).
@@ -55,13 +56,16 @@ All 38 automated tests pass consistently:
    - Inactive user account rejection.
    - Password mismatch rejection.
    - Standard authentication flow.
-4. `BillingCycleServiceTest`: State transitions and cycle finalization.
-5. `CsvUploadServiceTest`: CSV batch meter parsing and error tolerance.
-6. `EndToEndWorkflowTest`: Complete consumption, progressive tariff, and billing integration flow.
-7. `HouseholdDataIsolationTest`: Server-side tenant data isolation between resident accounts.
-8. `SharedCostAllocationServiceTest`: Bulk water shared cost allocation algorithms.
-9. `TariffPlanServiceTest`: Progressive tiered rate mathematics.
-10. `WaterUsageServiceTest`: Meter readings, non-decreasing continuity, and consumption calculation.
+5. `BillingCycleServiceTest` (4 tests): State transitions, cycle calculation, finalization, archiving, and resident notification dispatch.
+6. `CsvUploadServiceTest` (2 tests): CSV batch meter parsing, missing columns, invalid date format, continuity errors, and duplicate detection.
+7. `EndToEndWorkflowTest`: Complete consumption, progressive tariff, and billing integration flow.
+8. `HouseholdDataIsolationTest` (4 tests): Server-side tenant data isolation between resident accounts.
+9. `HouseholdServiceTest` (6 tests): Unit registration, apartment-scoped flat uniqueness, apartment lookup, update, and deletion.
+10. `MeterServiceTest` (6 tests): Smart/digital meter configuration, unique serial validation, household binding, and lookup by number.
+11. `SharedCostAllocationServiceTest` (2 tests): Bulk water shared cost allocation algorithms.
+12. `TariffPlanServiceTest` (3 tests): Progressive tiered rate mathematics.
+13. `UserServiceTest` (5 tests): Resident apartment & household assignment, apartment validation, household-apartment mismatch rejection, profile updates.
+14. `WaterUsageServiceTest` (6 tests): Meter readings, non-decreasing continuity, bidirectional checks (lower than previous, higher than next), duplicate date rejection, subsequent reading auto-adjustment.
 
 ---
 

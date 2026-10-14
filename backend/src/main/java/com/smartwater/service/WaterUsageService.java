@@ -54,6 +54,18 @@ public class WaterUsageService {
             );
         }
 
+        // Bidirectional continuity check: current reading cannot exceed next recorded reading
+        List<WaterUsageLog> nextLogs = waterUsageLogRepository.findNextReadings(meter.getId(), request.getReadingDate());
+        if (!nextLogs.isEmpty()) {
+            BigDecimal nextReading = nextLogs.get(0).getCurrentReading();
+            if (request.getCurrentReading().compareTo(nextReading) > 0) {
+                throw new InvalidReadingException(
+                        String.format("Current reading (%s) cannot be higher than subsequent reading (%s) on %s",
+                                request.getCurrentReading(), nextReading, nextLogs.get(0).getReadingDate())
+                );
+            }
+        }
+
         BigDecimal consumption = request.getCurrentReading().subtract(previousReading);
         WaterSource source = request.getSource() != null ? request.getSource() : WaterSource.MANUAL;
 
@@ -67,6 +79,15 @@ public class WaterUsageService {
                 .build();
 
         WaterUsageLog saved = waterUsageLogRepository.save(log);
+
+        // If a subsequent reading exists, update its previousReading and consumption to maintain continuity
+        if (!nextLogs.isEmpty()) {
+            WaterUsageLog nextLog = nextLogs.get(0);
+            nextLog.setPreviousReading(request.getCurrentReading());
+            nextLog.setConsumption(nextLog.getCurrentReading().subtract(request.getCurrentReading()));
+            waterUsageLogRepository.save(nextLog);
+        }
+
         return mapToDto(saved);
     }
 

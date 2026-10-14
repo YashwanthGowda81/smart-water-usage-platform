@@ -60,7 +60,13 @@ const Register = () => {
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Email might already be registered or administrator exists.');
+      const serverMessage = err.response?.data?.message;
+      const validationErrors = err.response?.data?.details
+        ? Object.values(err.response.data.details).join(', ')
+        : null;
+      setError(
+        validationErrors || serverMessage || (err.message ? `Registration failed: ${err.message}` : 'Registration failed. Please check your network connection and try again.')
+      );
     } finally {
       setSubmitting(false);
     }

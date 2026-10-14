@@ -20,6 +20,9 @@ public interface WaterUsageLogRepository extends JpaRepository<WaterUsageLog, Lo
     @Query("SELECT u FROM WaterUsageLog u WHERE u.meter.id = :meterId AND u.readingDate < :readingDate ORDER BY u.readingDate DESC")
     List<WaterUsageLog> findPreviousReadings(@Param("meterId") Long meterId, @Param("readingDate") LocalDate readingDate);
 
+    @Query("SELECT u FROM WaterUsageLog u WHERE u.meter.id = :meterId AND u.readingDate > :readingDate ORDER BY u.readingDate ASC")
+    List<WaterUsageLog> findNextReadings(@Param("meterId") Long meterId, @Param("readingDate") LocalDate readingDate);
+
     @Query("SELECT u FROM WaterUsageLog u WHERE u.meter.id = :meterId ORDER BY u.readingDate DESC")
     List<WaterUsageLog> findLatestReading(@Param("meterId") Long meterId);
 

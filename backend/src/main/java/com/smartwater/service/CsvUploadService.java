@@ -52,6 +52,12 @@ public class CsvUploadService {
                 rowNum++;
                 totalRows++;
 
+                if (record.size() < 3) {
+                    failedRows++;
+                    errors.add(new CsvRowError(rowNum, record.size() > 0 ? record.get(0) : "", "", "", "Row does not contain required 3 columns (meter_number, reading_date, current_reading)"));
+                    continue;
+                }
+
                 String meterNumber = record.isMapped("meter_number") ? record.get("meter_number") : record.get(0);
                 String readingDateStr = record.isMapped("reading_date") ? record.get("reading_date") : record.get(1);
                 String currentReadingStr = record.isMapped("current_reading") ? record.get("current_reading") : record.get(2);
@@ -59,6 +65,18 @@ public class CsvUploadService {
                 if (meterNumber == null || meterNumber.isBlank()) {
                     failedRows++;
                     errors.add(new CsvRowError(rowNum, meterNumber, readingDateStr, currentReadingStr, "Meter number is missing"));
+                    continue;
+                }
+
+                if (readingDateStr == null || readingDateStr.isBlank()) {
+                    failedRows++;
+                    errors.add(new CsvRowError(rowNum, meterNumber, readingDateStr, currentReadingStr, "Reading date is missing"));
+                    continue;
+                }
+
+                if (currentReadingStr == null || currentReadingStr.isBlank()) {
+                    failedRows++;
+                    errors.add(new CsvRowError(rowNum, meterNumber, readingDateStr, currentReadingStr, "Current reading value is missing"));
                     continue;
                 }
 
@@ -77,6 +95,12 @@ public class CsvUploadService {
                 } catch (NumberFormatException | NullPointerException e) {
                     failedRows++;
                     errors.add(new CsvRowError(rowNum, meterNumber, readingDateStr, currentReadingStr, "Invalid numerical current reading: " + currentReadingStr));
+                    continue;
+                }
+
+                if (currentReading.compareTo(BigDecimal.ZERO) < 0) {
+                    failedRows++;
+                    errors.add(new CsvRowError(rowNum, meterNumber, readingDateStr, currentReadingStr, "Current reading cannot be negative: " + currentReadingStr));
                     continue;
                 }
 

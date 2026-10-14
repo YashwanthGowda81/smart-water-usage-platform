@@ -63,8 +63,12 @@ const AdminRegister = () => {
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
+      const serverMessage = err.response?.data?.message;
+      const validationErrors = err.response?.data?.details
+        ? Object.values(err.response.data.details).join(', ')
+        : null;
       setError(
-        err.response?.data?.message || 'Owner registration failed. Email may already be registered or an administrator already exists.'
+        validationErrors || serverMessage || (err.message ? `Owner registration failed: ${err.message}` : 'Owner registration failed. Please check your network connection and try again.')
       );
     } finally {
       setSubmitting(false);

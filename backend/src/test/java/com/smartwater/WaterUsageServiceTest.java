@@ -141,4 +141,60 @@ class WaterUsageServiceTest {
         assertThrows(DuplicateResourceException.class, () -> waterUsageService.recordWaterUsage(usageRequest));
         verify(waterUsageLogRepository, never()).save(any());
     }
+
+    @Test
+    void recordWaterUsage_CurrentHigherThanNextReading_ThrowsInvalidReadingException() {
+        when(meterRepository.findByMeterNumber("MTR-1001")).thenReturn(Optional.of(meter));
+        when(waterUsageLogRepository.existsByMeterIdAndReadingDate(10L, LocalDate.of(2026, 10, 1))).thenReturn(false);
+        when(waterUsageLogRepository.findPreviousReadings(10L, LocalDate.of(2026, 10, 1))).thenReturn(Collections.emptyList());
+
+        WaterUsageLog nextLog = WaterUsageLog.builder()
+                .readingDate(LocalDate.of(2026, 10, 2))
+                .currentReading(new BigDecimal("1200.00")) // Lower than request's 1212.50
+                .build();
+        when(waterUsageLogRepository.findNextReadings(10L, LocalDate.of(2026, 10, 1))).thenReturn(List.of(nextLog));
+
+        assertThrows(InvalidReadingException.class, () -> waterUsageService.recordWaterUsage(usageRequest));
+        verify(waterUsageLogRepository, never()).save(any());
+    }
+
+    @Test
+    void recordWaterUsage_InsertedBetweenReadings_UpdatesSubsequentReadingContinuity() {
+        when(meterRepository.findByMeterNumber("MTR-1001")).thenReturn(Optional.of(meter));
+        when(waterUsageLogRepository.existsByMeterIdAndReadingDate(10L, LocalDate.of(2026, 10, 1))).thenReturn(false);
+
+        WaterUsageLog previousLog = WaterUsageLog.builder()
+                .readingDate(LocalDate.of(2026, 9, 30))
+                .currentReading(new BigDecimal("1200.00"))
+                .build();
+        when(waterUsageLogRepository.findPreviousReadings(10L, LocalDate.of(2026, 10, 1))).thenReturn(List.of(previousLog));
+
+        WaterUsageLog nextLog = WaterUsageLog.builder()
+                .id(105L)
+                .readingDate(LocalDate.of(2026, 10, 2))
+                .previousReading(new BigDecimal("1200.00"))
+                .currentReading(new BigDecimal("1230.00"))
+                .consumption(new BigDecimal("30.00"))
+                .build();
+        when(waterUsageLogRepository.findNextReadings(10L, LocalDate.of(2026, 10, 1))).thenReturn(List.of(nextLog));
+
+        WaterUsageLog savedCurrent = WaterUsageLog.builder()
+                .id(104L)
+                .meter(meter)
+                .readingDate(LocalDate.of(2026, 10, 1))
+                .previousReading(new BigDecimal("1200.00"))
+                .currentReading(new BigDecimal("1212.50"))
+                .consumption(new BigDecimal("12.50"))
+                .build();
+        when(waterUsageLogRepository.save(any(WaterUsageLog.class))).thenReturn(savedCurrent);
+
+        WaterUsageLogDto result = waterUsageService.recordWaterUsage(usageRequest);
+
+        assertNotNull(result);
+        assertEquals(new BigDecimal("12.50"), result.getConsumption());
+        // Verify nextLog's previous reading was updated to 1212.50 and consumption to 17.50
+        assertEquals(new BigDecimal("1212.50"), nextLog.getPreviousReading());
+        assertEquals(new BigDecimal("17.50"), nextLog.getConsumption());
+        verify(waterUsageLogRepository, times(2)).save(any(WaterUsageLog.class));
+    }
 }

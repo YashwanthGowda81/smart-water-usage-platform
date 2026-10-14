@@ -16,6 +16,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.smartwater.repository.ApartmentRepository apartmentRepository;
+    private final com.smartwater.repository.HouseholdRepository householdRepository;
 
     public UserProfileDto getUserProfile(String email) {
         User user = userRepository.findByEmail(email)
@@ -62,8 +64,29 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
-        user.setApartmentId(request.getApartmentId());
-        user.setHouseholdId(request.getHouseholdId());
+        if (request.getApartmentId() != null) {
+            if (!apartmentRepository.existsById(request.getApartmentId())) {
+                throw new ResourceNotFoundException("Apartment not found with ID: " + request.getApartmentId());
+            }
+        }
+
+        if (request.getHouseholdId() != null) {
+            com.smartwater.entity.Household household = householdRepository.findById(request.getHouseholdId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Household not found with ID: " + request.getHouseholdId()));
+
+            if (request.getApartmentId() != null && !household.getApartment().getId().equals(request.getApartmentId())) {
+                throw new com.smartwater.exception.InvalidReadingException(
+                        String.format("Household flat '%s' belongs to apartment ID %d, not %d",
+                                household.getFlatNumber(), household.getApartment().getId(), request.getApartmentId())
+                );
+            }
+            user.setApartmentId(household.getApartment().getId());
+            user.setHouseholdId(household.getId());
+        } else {
+            user.setApartmentId(request.getApartmentId());
+            user.setHouseholdId(null);
+        }
+
         if (request.getStatus() != null && !request.getStatus().trim().isEmpty()) {
             try {
                 user.setStatus(com.smartwater.entity.UserStatus.valueOf(request.getStatus().trim().toUpperCase()));

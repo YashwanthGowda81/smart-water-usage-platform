@@ -60,7 +60,13 @@ const ResidentRegister = () => {
       setPassword('');
       setConfirmPassword('');
     } catch (err) {
-      setError(err.response?.data?.message || 'Resident registration failed. Email may already be registered.');
+      const serverMessage = err.response?.data?.message;
+      const validationErrors = err.response?.data?.details
+        ? Object.values(err.response.data.details).join(', ')
+        : null;
+      setError(
+        validationErrors || serverMessage || (err.message ? `Resident registration failed: ${err.message}` : 'Resident registration failed. Please check your network connection and try again.')
+      );
     } finally {
       setSubmitting(false);
     }

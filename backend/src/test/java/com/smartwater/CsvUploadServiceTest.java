@@ -62,4 +62,27 @@ class CsvUploadServiceTest {
         assertEquals(1, summary.getDuplicateRows());
         assertEquals(2, summary.getErrors().size());
     }
+
+    @Test
+    void processCsvFile_MissingColumnsAndInvalidDate_CapturedInErrors() {
+        String csvContent = """
+                meter_number,reading_date,current_reading
+                MTR-1001,,1200.00
+                MTR-1002,not-a-date,1250.00
+                ,2026-10-01,1300.00
+                MTR-1003,2026-10-01,-50.00
+                """;
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "readings_invalid.csv", "text/csv", csvContent.getBytes()
+        );
+
+        CsvUploadSummaryDto summary = csvUploadService.processCsvFile(file);
+
+        assertNotNull(summary);
+        assertEquals(4, summary.getTotalRows());
+        assertEquals(0, summary.getSuccessfulRows());
+        assertEquals(4, summary.getFailedRows());
+        assertEquals(4, summary.getErrors().size());
+    }
 }

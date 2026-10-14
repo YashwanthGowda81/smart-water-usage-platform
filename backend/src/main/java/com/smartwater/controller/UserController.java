@@ -39,7 +39,7 @@ public class UserController {
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserProfileDto> assignUserHousehold(
             @PathVariable Long id,
-            @RequestBody com.smartwater.dto.AssignUserRequest request) {
+            @Valid @RequestBody com.smartwater.dto.AssignUserRequest request) {
         return ResponseEntity.ok(userService.assignUserHousehold(id, request));
     }
 
