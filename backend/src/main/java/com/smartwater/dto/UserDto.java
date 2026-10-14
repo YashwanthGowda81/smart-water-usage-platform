@@ -17,5 +17,7 @@ public class UserDto {
     private String email;
     private Role role;
     private UserStatus status;
+    private Long apartmentId;
+    private Long householdId;
     private OffsetDateTime createdAt;
 }

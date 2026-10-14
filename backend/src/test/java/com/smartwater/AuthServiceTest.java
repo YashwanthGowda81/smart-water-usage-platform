@@ -94,6 +94,23 @@ class AuthServiceTest {
     }
 
     @Test
+    void register_AdminWithInvalidSecret_WhenNotFirstUser_ThrowsUnauthorizedException() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.count()).thenReturn(5L);
+
+        RegisterRequest invalidAdminReq = RegisterRequest.builder()
+                .name("Attacker")
+                .email("attacker@smartwater.com")
+                .password("password123")
+                .role(Role.ADMIN)
+                .adminSecret("wrong-secret")
+                .build();
+
+        assertThrows(UnauthorizedException.class, () -> authService.register(invalidAdminReq));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
     void login_Success() {
         when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())).thenReturn(true);

@@ -22,6 +22,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
 
+    @org.springframework.beans.factory.annotation.Value("${smartwater.admin-secret:ADMIN-SECRET-2026}")
+    private String configuredAdminSecret = "ADMIN-SECRET-2026";
+
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String normalizedEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
@@ -33,10 +36,9 @@ public class AuthService {
         if (request.getRole() == Role.ADMIN) {
             // First registered user OR valid admin secret allows ADMIN role
             boolean isFirstUser = userRepository.count() == 0;
-            boolean isValidSecret = request.getAdminSecret() != null && 
-                    ("ADMIN-SECRET-2026".equalsIgnoreCase(request.getAdminSecret().trim()) || 
-                     "admin123".equalsIgnoreCase(request.getAdminSecret().trim()) ||
-                     "secret".equalsIgnoreCase(request.getAdminSecret().trim()));
+            boolean isValidSecret = request.getAdminSecret() != null &&
+                    configuredAdminSecret != null &&
+                    configuredAdminSecret.trim().equalsIgnoreCase(request.getAdminSecret().trim());
 
             if (isFirstUser || isValidSecret) {
                 userRole = Role.ADMIN;
@@ -100,6 +102,8 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getRole())
                 .status(user.getStatus())
+                .apartmentId(user.getApartmentId())
+                .householdId(user.getHouseholdId())
                 .createdAt(user.getCreatedAt())
                 .build();
     }
