@@ -39,25 +39,28 @@ const AboutPage = () => {
       </div>
 
       <div className="card">
-        <h2 className="card-title">🔮 Future Roadmap Capabilities</h2>
+        <h2 className="card-title">🚀 Platform Capabilities (Phases 1–4 Complete)</h2>
         <p style={{ color: '#475569', marginBottom: '1rem' }}>
-          The platform architecture is designed to support the following upcoming modules in subsequent releases:
+          All four architectural phases have been fully implemented, tested, and integrated:
         </p>
         <div className="grid-cols-2">
           <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '6px' }}>
             <h4 style={{ color: '#0284c7' }}>Automated Billing Engine</h4>
-            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Configurable tiered tariffs, billing cycles, adjustments, and PDF invoice generation.</p>
+            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Configurable progressive tiered tariffs, billing cycles (calculate/finalize/archive), shared bulk cost distribution, and itemized PDF invoice generation via Apache PDFBox.</p>
           </div>
           <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '6px' }}>
-            <h4 style={{ color: '#0284c7' }}>Anomaly Detection & Alerts</h4>
-            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Statistical mean + 2 std-dev algorithms for flagging potential abnormal consumption or leaks.</p>
+            <h4 style={{ color: '#0284c7' }}>Anomaly Detection & Security</h4>
+            <p style={{ fontSize: '0.9rem', color: '#64748b' }}>Statistical mean + 2 std-dev outlier alerts with duplicate prevention, BCrypt hashing, JWT authorization, and strict resident household data isolation.</p>
           </div>
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-        <Link to="/login" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
-          Access Platform Console
+      <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <Link to="/resident/login" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
+          Resident Sign In
+        </Link>
+        <Link to="/admin/login" className="btn btn-secondary" style={{ padding: '0.75rem 2rem', background: 'var(--primary-navy)', color: '#fff' }}>
+          Admin Sign In
         </Link>
       </div>
     </div>

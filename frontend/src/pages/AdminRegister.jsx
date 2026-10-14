@@ -29,6 +29,11 @@ const AdminRegister = () => {
       return;
     }
 
+    if (!adminSecret || adminSecret.trim() === '') {
+      setError('Administrator secret key is required for authorized onboarding.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const user = await register(name, email, password, 'ADMIN', adminSecret);
@@ -163,7 +168,7 @@ const AdminRegister = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Admin Secret Key</label>
+              <label className="form-label">Admin Secret Key / Provisioning Key</label>
               <div className="form-control-wrapper">
                 <span className="form-control-icon">🔑</span>
                 <input
@@ -171,11 +176,12 @@ const AdminRegister = () => {
                   className="form-control has-icon"
                   value={adminSecret}
                   onChange={(e) => setAdminSecret(e.target.value)}
-                  placeholder="Secret key (or leave empty if first system admin)"
+                  placeholder="Enter administrator bootstrap secret key"
+                  required
                 />
               </div>
               <small style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
-                Validated securely on the backend server.
+                Required authorization key configured on the backend server.
               </small>
             </div>
 

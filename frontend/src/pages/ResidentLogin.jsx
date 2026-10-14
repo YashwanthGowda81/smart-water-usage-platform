@@ -15,11 +15,18 @@ const ResidentLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!email || !password) {
+      setError('Please provide both email and password.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       const user = await login(email, password);
       if (user.role === 'ADMIN') {
+        // If an admin logs into resident portal, give them option or route to dashboard
         navigate('/admin/dashboard');
       } else {
         navigate('/resident/dashboard');

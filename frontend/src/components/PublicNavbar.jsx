@@ -69,11 +69,14 @@ const PublicNavbar = () => {
               </>
             ) : (
               <>
-                <Link to="/login" className="btn-nav-login" onClick={() => setMobileMenuOpen(false)}>
-                  Sign In
+                <Link to="/resident/login" className="btn-nav-login" onClick={() => setMobileMenuOpen(false)}>
+                  Resident Login
                 </Link>
-                <Link to="/register" className="btn-nav-register" onClick={() => setMobileMenuOpen(false)}>
-                  Register
+                <Link to="/admin/login" className="btn-nav-login" style={{ background: 'var(--primary-navy)', color: '#fff', borderColor: 'var(--primary-navy)' }} onClick={() => setMobileMenuOpen(false)}>
+                  Admin Login
+                </Link>
+                <Link to="/resident/register" className="btn-nav-register" onClick={() => setMobileMenuOpen(false)}>
+                  Join Resident
                 </Link>
               </>
             )}

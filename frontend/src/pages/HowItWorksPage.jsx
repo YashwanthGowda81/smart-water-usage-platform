@@ -40,29 +40,29 @@ const HowItWorksPage = () => {
       </div>
 
       <div className="card" style={{ marginBottom: '2.5rem' }}>
-        <h2 className="card-title">Planned Future Billing Workflow</h2>
+        <h2 className="card-title">Automated Billing & Invoicing Workflow (Phase 2 Active)</h2>
         <div className="workflow-diagram">
-          <div className="diag-box planned">
+          <div className="diag-box">
             <strong>Consumption Data</strong>
             <span>Calculated kL usage</span>
           </div>
           <div className="diag-arrow">➔</div>
-          <div className="diag-box planned">
+          <div className="diag-box">
             <strong>Tariff Engine</strong>
             <span>Configurable rate tiers</span>
           </div>
           <div className="diag-arrow">➔</div>
-          <div className="diag-box planned">
+          <div className="diag-box">
             <strong>Shared Cost</strong>
             <span>Common area distribution</span>
           </div>
           <div className="diag-arrow">➔</div>
-          <div className="diag-box planned">
+          <div className="diag-box">
             <strong>Invoice Gen</strong>
             <span>PDF Invoices</span>
           </div>
           <div className="diag-arrow">➔</div>
-          <div className="diag-box planned">
+          <div className="diag-box">
             <strong>Alerts</strong>
             <span>Leakage warnings</span>
           </div>
@@ -91,9 +91,12 @@ const HowItWorksPage = () => {
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-        <RouterLink to="/login" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
-          Test Workflow Live
+      <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <RouterLink to="/resident/login" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
+          Resident Sign In
+        </RouterLink>
+        <RouterLink to="/admin/login" className="btn btn-secondary" style={{ padding: '0.75rem 2rem', background: 'var(--primary-navy)', color: '#fff' }}>
+          Admin Sign In
         </RouterLink>
       </div>
     </div>

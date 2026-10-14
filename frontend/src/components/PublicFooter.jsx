@@ -22,11 +22,17 @@ const PublicFooter = () => {
         </div>
 
         <div className="footer-links-group">
-          <h4>Platform Access</h4>
-          <Link to="/login">Sign In</Link>
-          <Link to="/register">Create Account</Link>
-          <Link to="/admin/dashboard">Admin Console</Link>
-          <Link to="/resident/dashboard">Resident Portal</Link>
+          <h4>Resident Access</h4>
+          <Link to="/resident/login">Resident Login</Link>
+          <Link to="/resident/register">Resident Registration</Link>
+          <Link to="/resident/dashboard">Household Portal</Link>
+        </div>
+
+        <div className="footer-links-group">
+          <h4>Admin Access</h4>
+          <Link to="/admin/login">Admin Console Login</Link>
+          <Link to="/admin/register">Admin Secure Onboarding</Link>
+          <Link to="/admin/dashboard">Management Console</Link>
         </div>
       </div>
 

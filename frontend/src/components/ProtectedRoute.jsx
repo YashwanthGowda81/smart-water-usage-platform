@@ -34,9 +34,20 @@ const ProtectedRoute = ({ allowedRoles }) => {
     }
 
     return (
-      <div style={{ padding: '3rem 1.5rem', textAlign: 'center', maxWidth: '500px', margin: '3rem auto' }} className="card">
+      <div style={{ padding: '3rem 1.5rem', textAlign: 'center', maxWidth: '520px', margin: '3rem auto' }} className="card">
+        <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🛡️</div>
         <h2 style={{ color: 'var(--error)', marginBottom: '0.5rem' }}>Access Denied</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>You do not have permission to view this page with your account role ({user.role}).</p>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+          You do not have permission to view this section with your active account role (<strong>{user.role}</strong>).
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          {user.role === 'ADMIN' ? (
+            <a href="/admin/dashboard" className="btn btn-primary">Go to Admin Dashboard</a>
+          ) : (
+            <a href="/resident/dashboard" className="btn btn-primary">Go to Resident Dashboard</a>
+          )}
+          <a href="/" className="btn btn-secondary">Public Home</a>
+        </div>
       </div>
     );
   }

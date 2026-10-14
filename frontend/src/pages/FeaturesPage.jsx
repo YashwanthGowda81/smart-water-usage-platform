@@ -57,29 +57,30 @@ const FeaturesPage = () => {
       </div>
 
       <h2 style={{ fontSize: '1.4rem', marginBottom: '1rem', color: '#1e293b' }}>
-        Planned Future Modules
+        Automated Billing & Analytics Modules (Phase 2)
       </h2>
       <div className="grid-cols-2" style={{ marginBottom: '2rem' }}>
-        <div className="card" style={{ borderColor: '#cbd5e1', background: '#f8fafc' }}>
-          <span className="badge-planned">Module Under Development</span>
-          <h3 className="card-title" style={{ marginTop: '0.5rem' }}>🧾 Tiered Tariff & Billing Engine</h3>
-          <p style={{ color: '#64748b' }}>
-            Configurable rate tiers (e.g., 0-10 kL @ ₹20, 10-20 kL @ ₹30), billing cycles, bulk water procurement tracking, shared cost distribution, and PDF invoice generation.
+        <div className="card">
+          <h3 className="card-title">🧾 Tiered Tariff & Billing Engine</h3>
+          <p style={{ color: '#475569' }}>
+            Configurable rate tiers (e.g., 0-10 kL @ ₹20, &gt;10 kL @ ₹30), billing cycle state machine, bulk water procurement tracking (tanker & municipal), fair consumption-proportional shared cost allocation, and Apache PDFBox invoice generation.
           </p>
         </div>
 
-        <div className="card" style={{ borderColor: '#cbd5e1', background: '#f8fafc' }}>
-          <span className="badge-planned">Module Under Development</span>
-          <h3 className="card-title" style={{ marginTop: '0.5rem' }}>⚠️ Anomaly & Leak Alerts</h3>
-          <p style={{ color: '#64748b' }}>
-            Statistical mean + 2 std-dev algorithms for automated leak indicators, scheduled background checks, and in-app/email notifications.
+        <div className="card">
+          <h3 className="card-title">⚠️ Anomaly & Leak Alerts</h3>
+          <p style={{ color: '#475569' }}>
+            Statistical outlier algorithms for automated leak indicators, persistent anomaly event logging with duplicate alert defense, and in-app resident notifications.
           </p>
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <Link to="/login" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
-          Get Started Now
+      <div style={{ textAlign: 'center', marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <Link to="/resident/login" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
+          Resident Sign In
+        </Link>
+        <Link to="/admin/login" className="btn btn-secondary" style={{ padding: '0.75rem 2rem', background: 'var(--primary-navy)', color: '#fff' }}>
+          Admin Sign In
         </Link>
       </div>
     </div>

@@ -233,6 +233,14 @@ const Register = () => {
             <p>
               Already have an account? <Link to="/login">Sign in here</Link>
             </p>
+            <div style={{ margin: '0.85rem 0', padding: '0.75rem', background: '#F8FAFC', borderRadius: '6px', fontSize: '0.825rem', border: '1px solid #E2E8F0' }}>
+              <div style={{ fontWeight: 600, color: 'var(--primary-navy)', marginBottom: '0.25rem' }}>Direct Registration Options:</div>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <Link to="/resident/register" style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>🏠 Resident Sign Up</Link>
+                <span style={{ color: '#CBD5E1' }}>|</span>
+                <Link to="/admin/register" style={{ color: 'var(--primary-navy)', fontWeight: 600 }}>🛡️ Admin Onboarding</Link>
+              </div>
+            </div>
             <Link to="/" className="link-public-home">
               ← Back to public website
             </Link>

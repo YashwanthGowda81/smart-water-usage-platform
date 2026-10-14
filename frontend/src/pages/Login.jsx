@@ -126,8 +126,16 @@ const Login = () => {
 
           <div className="auth-links">
             <p>
-              Don't have an account? <Link to="/register">Create one</Link>
+              Don't have an account? <Link to="/register">Create an account</Link>
             </p>
+            <div style={{ margin: '0.85rem 0', padding: '0.75rem', background: '#F8FAFC', borderRadius: '6px', fontSize: '0.825rem', border: '1px solid #E2E8F0' }}>
+              <div style={{ fontWeight: 600, color: 'var(--primary-navy)', marginBottom: '0.25rem' }}>Direct Portal Logins:</div>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <Link to="/resident/login" style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>🏠 Resident Login</Link>
+                <span style={{ color: '#CBD5E1' }}>|</span>
+                <Link to="/admin/login" style={{ color: 'var(--primary-navy)', fontWeight: 600 }}>🛡️ Admin Console</Link>
+              </div>
+            </div>
             <Link to="/" className="link-public-home">
               ← Back to public website
             </Link>

@@ -55,9 +55,12 @@ const WaterSavingPage = () => {
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-        <Link to="/login" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
-          Log In & View Household Usage
+      <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+        <Link to="/resident/login" className="btn btn-primary" style={{ padding: '0.75rem 2rem' }}>
+          Resident Sign In & Usage Tracking
+        </Link>
+        <Link to="/admin/login" className="btn btn-secondary" style={{ padding: '0.75rem 2rem', background: 'var(--primary-navy)', color: '#fff' }}>
+          Admin Console
         </Link>
       </div>
     </div>

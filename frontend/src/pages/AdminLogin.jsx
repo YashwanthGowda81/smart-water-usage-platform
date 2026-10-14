@@ -15,6 +15,12 @@ const AdminLogin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!email || !password) {
+      setError('Please provide both administrator email and password.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
