@@ -35,6 +35,3 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
-
-smartwater:
-  admin-secret: ${ADMIN_SECRET:ADMIN-SECRET-2026}

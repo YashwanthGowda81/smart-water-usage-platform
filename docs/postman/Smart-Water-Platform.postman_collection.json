@@ -1,4 +1,4 @@
-{
+﻿{
   "info": {
     "name": "Smart Water Platform API Collection",
     "_postman_id": "b96a1e38-7f41-45ce-939e-21ef65dcae91",
@@ -345,7 +345,7 @@
             "method": "PUT",
             "header": [
               {"key": "Authorization", "value": "Bearer {{token}}"},
-              {"key": "Content-Type", "application/json"}
+              {"key": "Content-Type", "value": "application/json"}
             ],
             "body": {
               "mode": "raw",
@@ -436,3 +436,4 @@
     }
   ]
 }
+

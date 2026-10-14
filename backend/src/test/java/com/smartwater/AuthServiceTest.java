@@ -69,16 +69,18 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_Success() {
+    void register_FirstOwner_Success_ReturnsMessageAndNoToken() {
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(userRepository.existsByRole(Role.ADMIN)).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encoded_hash");
         when(userRepository.save(any(User.class))).thenReturn(user);
-        when(tokenProvider.generateToken(anyString(), any(Role.class))).thenReturn("jwt_mock_token");
 
         AuthResponse response = authService.register(registerRequest);
 
         assertNotNull(response);
-        assertEquals("jwt_mock_token", response.getToken());
+        assertNull(response.getToken(), "Registration must not issue token or auto-login");
+        assertNotNull(response.getMessage());
+        assertTrue(response.getMessage().contains("Owner account registered successfully"));
         assertEquals("admin@smartwater.com", response.getUser().getEmail());
         assertEquals(Role.ADMIN, response.getUser().getRole());
 
@@ -94,20 +96,50 @@ class AuthServiceTest {
     }
 
     @Test
-    void register_AdminWithInvalidSecret_WhenNotFirstUser_ThrowsUnauthorizedException() {
+    void register_SecondAdmin_WhenAdminAlreadyExists_ThrowsUnauthorizedException() {
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
-        when(userRepository.count()).thenReturn(5L);
+        when(userRepository.existsByRole(Role.ADMIN)).thenReturn(true);
 
-        RegisterRequest invalidAdminReq = RegisterRequest.builder()
-                .name("Attacker")
-                .email("attacker@smartwater.com")
+        RegisterRequest secondAdminReq = RegisterRequest.builder()
+                .name("Second Owner Attempt")
+                .email("second@smartwater.com")
                 .password("password123")
                 .role(Role.ADMIN)
-                .adminSecret("wrong-secret")
                 .build();
 
-        assertThrows(UnauthorizedException.class, () -> authService.register(invalidAdminReq));
+        assertThrows(UnauthorizedException.class, () -> authService.register(secondAdminReq));
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void register_Resident_Success_WhenAdminAlreadyExists() {
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("encoded_hash");
+
+        User residentUser = User.builder()
+                .id(2L)
+                .name("Resident User")
+                .email("resident@smartwater.com")
+                .passwordHash("encoded_hash")
+                .role(Role.RESIDENT)
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        when(userRepository.save(any(User.class))).thenReturn(residentUser);
+
+        RegisterRequest residentReq = RegisterRequest.builder()
+                .name("Resident User")
+                .email("resident@smartwater.com")
+                .password("password123")
+                .role(Role.RESIDENT)
+                .build();
+
+        AuthResponse response = authService.register(residentReq);
+
+        assertNotNull(response);
+        assertNull(response.getToken(), "Registration must not auto-login");
+        assertEquals(Role.RESIDENT, response.getUser().getRole());
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test

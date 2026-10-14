@@ -9,7 +9,7 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   
-  const { login } = useContext(AuthContext);
+  const { login, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -24,15 +24,17 @@ const AdminLogin = () => {
     setSubmitting(true);
 
     try {
-      const user = await login(email, password);
+      const user = await login(email.trim(), password);
       if (user.role === 'ADMIN') {
         navigate('/admin/dashboard');
       } else {
-        setError('Account is registered as a Resident. Please use the Resident Portal login.');
+        // Safe denial: Logout resident credentials to prevent residual session on admin console
+        logout();
+        setError('Access denied: This account is registered as a Resident. Please sign in via the Resident Portal.');
       }
     } catch (err) {
       setError(
-        err.response?.data?.message || 'Invalid administrator credentials or access error.'
+        err.response?.data?.message || 'Invalid administrator credentials. Please check your email and password.'
       );
     } finally {
       setSubmitting(false);

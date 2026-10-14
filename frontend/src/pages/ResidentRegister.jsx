@@ -9,17 +9,34 @@ const ResidentRegister = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const { register } = useContext(AuthContext);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match. Please re-enter.');
+    if (!name || name.trim() === '') {
+      setError('Resident full name is required.');
+      return;
+    }
+
+    if (!email || email.trim() === '') {
+      setError('Email address is required.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Please provide a valid email address.');
+      return;
+    }
+
+    if (!password) {
+      setError('Password is required.');
       return;
     }
 
@@ -28,11 +45,20 @@ const ResidentRegister = () => {
       return;
     }
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please re-enter.');
+      return;
+    }
+
     setSubmitting(true);
     try {
-      // Force RESIDENT role for resident registration
-      const user = await register(name, email, password, 'RESIDENT', '');
-      navigate('/resident/dashboard');
+      // Force RESIDENT role for resident registration, no auto-login
+      const response = await register(name.trim(), email.trim(), password, 'RESIDENT');
+      setSuccessMessage(
+        response?.message || 'Resident account registered successfully! You can now proceed to login.'
+      );
+      setPassword('');
+      setConfirmPassword('');
     } catch (err) {
       setError(err.response?.data?.message || 'Resident registration failed. Email may already be registered.');
     } finally {
@@ -87,95 +113,113 @@ const ResidentRegister = () => {
             <p>Register a new resident account to get started.</p>
           </div>
 
-          {error && <div className="alert alert-danger">{error}</div>}
+          {error && <div className="alert alert-danger" style={{ marginBottom: '1.25rem' }}>{error}</div>}
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">Full Name</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">👤</span>
-                <input
-                  type="text"
-                  className="form-control has-icon"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Priya Sharma"
-                  required
-                />
+          {successMessage ? (
+            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>✅</div>
+              <h3 style={{ color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>Registration Successful</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                {successMessage}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <Link to="/resident/login" className="btn btn-primary btn-full" style={{ padding: '0.75rem', fontSize: '1rem', fontWeight: 600 }}>
+                  Proceed to Resident Login →
+                </Link>
+                <Link to="/" className="btn btn-secondary btn-full">
+                  Back to Public Website
+                </Link>
               </div>
             </div>
-
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">✉</span>
-                <input
-                  type="email"
-                  className="form-control has-icon"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  autoComplete="email"
-                  required
-                />
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <div className="form-control-wrapper">
+                  <span className="form-control-icon">👤</span>
+                  <input
+                    type="text"
+                    className="form-control has-icon"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Priya Sharma"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">🔒</span>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="form-control has-icon"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="toggle-password-btn"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
+                <div className="form-control-wrapper">
+                  <span className="form-control-icon">✉</span>
+                  <input
+                    type="email"
+                    className="form-control has-icon"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    autoComplete="email"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">🔒</span>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="form-control has-icon"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter password"
-                  autoComplete="new-password"
-                  required
-                />
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <div className="form-control-wrapper">
+                  <span className="form-control-icon">🔒</span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="form-control has-icon"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Account Role</label>
-              <input type="text" className="form-control" value="RESIDENT (Standard Account)" disabled />
-            </div>
+              <div className="form-group">
+                <label className="form-label">Confirm Password</label>
+                <div className="form-control-wrapper">
+                  <span className="form-control-icon">🔒</span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="form-control has-icon"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    autoComplete="new-password"
+                    required
+                  />
+                </div>
+              </div>
 
-            <button type="submit" className="btn btn-primary btn-full" disabled={submitting} style={{ marginTop: '1rem' }}>
-              {submitting ? 'Registering...' : 'Register Resident Account'}
-            </button>
-          </form>
+              <div className="form-group">
+                <label className="form-label">Account Role</label>
+                <input type="text" className="form-control" value="RESIDENT (Standard Account)" disabled />
+              </div>
 
-          <div className="auth-links">
+              <button type="submit" className="btn btn-primary btn-full" disabled={submitting} style={{ marginTop: '1rem' }}>
+                {submitting ? 'Registering...' : 'Register Resident Account'}
+              </button>
+            </form>
+          )}
+
+          <div className="auth-links" style={{ marginTop: '1.5rem' }}>
             <p>
               Already registered? <Link to="/resident/login">Sign in here</Link>
             </p>
             <p style={{ marginTop: '0.25rem' }}>
-              Apartment Owner / Admin? <Link to="/admin/register">Go to Admin Registration</Link>
+              Apartment Owner / Admin? <Link to="/admin/register">Go to Owner Registration</Link>
             </p>
             <Link to="/" className="link-public-home" style={{ marginTop: '0.5rem', display: 'inline-block' }}>
               ← Back to public website

@@ -8,8 +8,8 @@ const AdminRegister = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [adminSecret, setAdminSecret] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const { register } = useContext(AuthContext);
@@ -18,9 +18,27 @@ const AdminRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match. Please re-enter.');
+    if (!name || name.trim() === '') {
+      setError('Owner full name is required.');
+      return;
+    }
+
+    if (!email || email.trim() === '') {
+      setError('Owner email address is required.');
+      return;
+    }
+
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      setError('Please provide a valid email address.');
+      return;
+    }
+
+    if (!password) {
+      setError('Password is required.');
       return;
     }
 
@@ -29,18 +47,24 @@ const AdminRegister = () => {
       return;
     }
 
-    if (!adminSecret || adminSecret.trim() === '') {
-      setError('Administrator secret key is required for authorized onboarding.');
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please re-enter.');
       return;
     }
 
     setSubmitting(true);
     try {
-      const user = await register(name, email, password, 'ADMIN', adminSecret);
-      navigate('/admin/dashboard');
+      // Register with role ADMIN and NO secret key requirement
+      const response = await register(name.trim(), email.trim(), password, 'ADMIN');
+      setSuccessMessage(
+        response?.message || 'Owner account registered successfully! You can now proceed to login.'
+      );
+      // Clear sensitive fields
+      setPassword('');
+      setConfirmPassword('');
     } catch (err) {
       setError(
-        err.response?.data?.message || 'Admin registration failed. Invalid secret key or email already registered.'
+        err.response?.data?.message || 'Owner registration failed. Email may already be registered or an administrator already exists.'
       );
     } finally {
       setSubmitting(false);
@@ -58,25 +82,29 @@ const AdminRegister = () => {
 
         <div className="auth-brand-body">
           <span className="badge badge-primary" style={{ background: 'var(--primary-blue)', color: '#fff', fontSize: '0.85rem' }}>
-            Administrator Provisioning
+            Apartment Owner / Admin Console
           </span>
-          <h1 style={{ marginTop: '0.75rem' }}>Register Administrator</h1>
+          <h1 style={{ marginTop: '0.75rem' }}>Register Apartment Owner</h1>
           <p>
-            Secure initial administrator account registration with backend server validation and secret verification.
+            Create your platform administrator account to manage apartment communities, meters, progressive tariffs, and billing lifecycles.
           </p>
 
           <div className="auth-value-props">
             <div className="prop-item">
               <span className="prop-icon">✓</span>
-              <span>Backend server-validated admin secret key</span>
+              <span>Centralized apartment community management</span>
             </div>
             <div className="prop-item">
               <span className="prop-icon">✓</span>
-              <span>Full control over apartment communities & households</span>
+              <span>Submetering and bulk CSV meter reading entry</span>
             </div>
             <div className="prop-item">
               <span className="prop-icon">✓</span>
               <span>Progressive tariff configuration & billing cycles</span>
+            </div>
+            <div className="prop-item">
+              <span className="prop-icon">✓</span>
+              <span>Secure server-enforced role authorization</span>
             </div>
           </div>
         </div>
@@ -90,112 +118,112 @@ const AdminRegister = () => {
       <div className="auth-form-panel">
         <div className="auth-form-card" style={{ maxWidth: '480px' }}>
           <div className="auth-form-header">
-            <h2>Admin Account Setup</h2>
-            <p>Register an administrator account with secret key authorization.</p>
+            <h2>Apartment Owner Registration</h2>
+            <p>Set up your community administrator account.</p>
           </div>
 
-          {error && <div className="alert alert-danger">{error}</div>}
+          {error && <div className="alert alert-danger" style={{ marginBottom: '1.25rem' }}>{error}</div>}
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label className="form-label">Full Name</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">👤</span>
-                <input
-                  type="text"
-                  className="form-control has-icon"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Admin Manager"
-                  required
-                />
+          {successMessage ? (
+            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>✅</div>
+              <h3 style={{ color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>Registration Successful</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+                {successMessage}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <Link to="/admin/login" className="btn btn-primary btn-full" style={{ padding: '0.75rem', fontSize: '1rem', fontWeight: 600 }}>
+                  Proceed to Owner Login →
+                </Link>
+                <Link to="/" className="btn btn-secondary btn-full">
+                  Back to Public Website
+                </Link>
               </div>
             </div>
-
-            <div className="form-group">
-              <label className="form-label">Email Address</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">✉</span>
-                <input
-                  type="email"
-                  className="form-control has-icon"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
-                  autoComplete="email"
-                  required
-                />
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <div className="form-control-wrapper">
+                  <span className="form-control-icon">👤</span>
+                  <input
+                    type="text"
+                    className="form-control has-icon"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Community Owner / Admin"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">🔒</span>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="form-control has-icon"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  type="button"
-                  className="toggle-password-btn"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? 'Hide' : 'Show'}
-                </button>
+              <div className="form-group">
+                <label className="form-label">Email Address</label>
+                <div className="form-control-wrapper">
+                  <span className="form-control-icon">✉</span>
+                  <input
+                    type="email"
+                    className="form-control has-icon"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="owner@apartment.com"
+                    autoComplete="email"
+                    required
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">🔒</span>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="form-control has-icon"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Re-enter password"
-                  autoComplete="new-password"
-                  required
-                />
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <div className="form-control-wrapper">
+                  <span className="form-control-icon">🔒</span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="form-control has-icon"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    autoComplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="toggle-password-btn"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label className="form-label">Admin Secret Key / Provisioning Key</label>
-              <div className="form-control-wrapper">
-                <span className="form-control-icon">🔑</span>
-                <input
-                  type="password"
-                  className="form-control has-icon"
-                  value={adminSecret}
-                  onChange={(e) => setAdminSecret(e.target.value)}
-                  placeholder="Enter administrator bootstrap secret key"
-                  required
-                />
+              <div className="form-group">
+                <label className="form-label">Confirm Password</label>
+                <div className="form-control-wrapper">
+                  <span className="form-control-icon">🔒</span>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="form-control has-icon"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    autoComplete="new-password"
+                    required
+                  />
+                </div>
               </div>
-              <small style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
-                Required authorization key configured on the backend server.
-              </small>
-            </div>
 
-            <button type="submit" className="btn btn-primary btn-full" disabled={submitting} style={{ marginTop: '1rem' }}>
-              {submitting ? 'Registering Admin...' : 'Register Administrator Account'}
-            </button>
-          </form>
+              <button type="submit" className="btn btn-primary btn-full" disabled={submitting} style={{ marginTop: '1rem' }}>
+                {submitting ? 'Registering Owner...' : 'Register Owner Account'}
+              </button>
+            </form>
+          )}
 
-          <div className="auth-links">
+          <div className="auth-links" style={{ marginTop: '1.5rem' }}>
             <p>
-              Already registered? <Link to="/admin/login">Sign in here</Link>
+              Already registered? <Link to="/admin/login">Owner Login here</Link>
             </p>
             <p style={{ marginTop: '0.25rem' }}>
-              Resident Account? <Link to="/resident/register">Go to Resident Registration</Link>
+              Resident Account? <Link to="/resident/register">Resident Registration</Link>
             </p>
             <Link to="/" className="link-public-home" style={{ marginTop: '0.5rem', display: 'inline-block' }}>
               ← Back to public website

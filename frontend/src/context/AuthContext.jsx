@@ -41,14 +41,10 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const register = async (name, email, password, role, adminSecret) => {
-    const response = await api.post('/auth/register', { name, email, password, role, adminSecret });
-    const { token: jwtToken, user: userData } = response.data;
-    localStorage.setItem('token', jwtToken);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setToken(jwtToken);
-    setUser(userData);
-    return userData;
+  const register = async (name, email, password, role) => {
+    const response = await api.post('/auth/register', { name, email, password, role });
+    // Registration must not automatically log in or set tokens in session
+    return response.data;
   };
 
   const logout = () => {

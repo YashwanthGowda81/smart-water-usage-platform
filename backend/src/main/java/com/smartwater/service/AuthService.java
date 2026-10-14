@@ -22,9 +22,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
 
-    @org.springframework.beans.factory.annotation.Value("${smartwater.admin-secret:ADMIN-SECRET-2026}")
-    private String configuredAdminSecret = "ADMIN-SECRET-2026";
-
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String normalizedEmail = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";
@@ -34,16 +31,14 @@ public class AuthService {
 
         Role userRole = Role.RESIDENT;
         if (request.getRole() == Role.ADMIN) {
-            // First registered user OR valid admin secret allows ADMIN role
-            boolean isFirstUser = userRepository.count() == 0;
-            boolean isValidSecret = request.getAdminSecret() != null &&
-                    configuredAdminSecret != null &&
-                    configuredAdminSecret.trim().equalsIgnoreCase(request.getAdminSecret().trim());
-
-            if (isFirstUser || isValidSecret) {
+            // Secure Owner Bootstrap Process:
+            // The first owner may be created ONLY when no administrator currently exists in the system.
+            // Once an administrator exists, public registration cannot create additional ADMIN accounts.
+            boolean adminExists = userRepository.existsByRole(Role.ADMIN);
+            if (!adminExists) {
                 userRole = Role.ADMIN;
             } else {
-                throw new UnauthorizedException("Administrator registration requires a valid admin secret key.");
+                throw new UnauthorizedException("An administrator already exists. Public registration of additional administrator accounts is disabled. Please contact your system administrator.");
             }
         }
 
@@ -57,11 +52,12 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        String token = tokenProvider.generateToken(savedUser.getEmail(), savedUser.getRole());
+        String successMessage = userRole == Role.ADMIN
+                ? "Owner account registered successfully. Please proceed to the Owner Login page to sign in."
+                : "Resident account registered successfully. Please proceed to login.";
 
         return AuthResponse.builder()
-                .token(token)
-                .tokenType("Bearer")
+                .message(successMessage)
                 .user(mapToUserDto(savedUser))
                 .build();
     }

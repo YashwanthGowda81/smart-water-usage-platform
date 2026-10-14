@@ -26,5 +26,4 @@ public class RegisterRequest {
     private String password;
 
     private Role role; // Optional, defaults to RESIDENT if null
-    private String adminSecret; // Required if requesting ADMIN role
 }
