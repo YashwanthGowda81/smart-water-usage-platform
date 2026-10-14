@@ -31,8 +31,15 @@ export const AuthProvider = ({ children }) => {
     verifySession();
   }, [token]);
 
-  const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
+  const login = async (email, password, role = null) => {
+    const payload = { 
+      email: email ? email.trim().toLowerCase() : '', 
+      password 
+    };
+    if (role) {
+      payload.role = role;
+    }
+    const response = await api.post('/auth/login', payload);
     const { token: jwtToken, user: userData } = response.data;
     localStorage.setItem('token', jwtToken);
     localStorage.setItem('user', JSON.stringify(userData));
@@ -41,8 +48,11 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const register = async (name, email, password, role) => {
-    const response = await api.post('/auth/register', { name, email, password, role });
+  const register = async (name, email, password, role = 'RESIDENT') => {
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
+    const payload = { name: name.trim(), email: normalizedEmail, password, role };
+    const endpoint = role === 'ADMIN' ? '/auth/register/owner' : '/auth/register/resident';
+    const response = await api.post(endpoint, payload);
     // Registration must not automatically log in or set tokens in session
     return response.data;
   };

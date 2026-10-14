@@ -75,6 +75,16 @@ public class AuthService {
             throw new UnauthorizedException("User account is inactive");
         }
 
+        // Server-side role separation enforcement
+        if (request.getRole() != null) {
+            if (request.getRole() == Role.ADMIN && user.getRole() != Role.ADMIN) {
+                throw new UnauthorizedException("Access denied: This account is registered as a Resident. Please sign in via the Resident Portal.");
+            }
+            if (request.getRole() == Role.RESIDENT && user.getRole() != Role.RESIDENT) {
+                throw new UnauthorizedException("Access denied: This portal is for Residents only. Apartment Owners/Administrators must use the Owner Login page.");
+            }
+        }
+
         String token = tokenProvider.generateToken(user.getEmail(), user.getRole());
 
         return AuthResponse.builder()

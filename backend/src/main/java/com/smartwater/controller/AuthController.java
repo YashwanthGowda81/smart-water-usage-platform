@@ -27,9 +27,42 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @PostMapping("/register/resident")
+    @Operation(summary = "Register a new resident (Always assigns RESIDENT role on backend)")
+    public ResponseEntity<AuthResponse> registerResident(@Valid @RequestBody RegisterRequest request) {
+        // Enforce that resident registration always assigns RESIDENT role, never trusting public input
+        request.setRole(com.smartwater.entity.Role.RESIDENT);
+        AuthResponse response = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/register/owner")
+    @Operation(summary = "Register initial apartment owner (Initial bootstrap only)")
+    public ResponseEntity<AuthResponse> registerOwner(@Valid @RequestBody RegisterRequest request) {
+        request.setRole(com.smartwater.entity.Role.ADMIN);
+        AuthResponse response = authService.register(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     @PostMapping("/login")
     @Operation(summary = "Authenticate user and receive JWT token")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login/resident")
+    @Operation(summary = "Authenticate resident credentials (rejects non-resident accounts)")
+    public ResponseEntity<AuthResponse> loginResident(@Valid @RequestBody LoginRequest request) {
+        request.setRole(com.smartwater.entity.Role.RESIDENT);
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/login/owner")
+    @Operation(summary = "Authenticate owner credentials (rejects non-admin accounts)")
+    public ResponseEntity<AuthResponse> loginOwner(@Valid @RequestBody LoginRequest request) {
+        request.setRole(com.smartwater.entity.Role.ADMIN);
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }

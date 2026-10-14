@@ -25,11 +25,23 @@ public class UserService {
 
     @Transactional
     public UserProfileDto updateProfile(String currentEmail, UpdateProfileRequest request) {
-        User user = userRepository.findByEmail(currentEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + currentEmail));
+        String normalizedCurrent = currentEmail != null ? currentEmail.trim().toLowerCase() : "";
+        User user = userRepository.findByEmail(normalizedCurrent)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + normalizedCurrent));
 
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            user.setName(request.getName().trim());
+        }
+
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            String normalizedNewEmail = request.getEmail().trim().toLowerCase();
+            if (!normalizedNewEmail.equalsIgnoreCase(user.getEmail())) {
+                if (userRepository.existsByEmail(normalizedNewEmail)) {
+                    throw new com.smartwater.exception.DuplicateResourceException("Email already in use: " + normalizedNewEmail);
+                }
+                user.setEmail(normalizedNewEmail);
+            }
+        }
 
         if (request.getNewPassword() != null && !request.getNewPassword().trim().isEmpty()) {
             user.setPasswordHash(passwordEncoder.encode(request.getNewPassword().trim()));

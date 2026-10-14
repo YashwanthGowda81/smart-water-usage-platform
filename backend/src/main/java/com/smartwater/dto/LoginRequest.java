@@ -17,4 +17,6 @@ public class LoginRequest {
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    private com.smartwater.entity.Role role; // Optional expected role for portal role enforcement
 }

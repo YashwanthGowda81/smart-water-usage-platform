@@ -9,7 +9,7 @@ const ResidentLogin = () => {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   
-  const { login } = useContext(AuthContext);
+  const { login, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,23 +17,23 @@ const ResidentLogin = () => {
     setError('');
 
     if (!email || !password) {
-      setError('Please provide both email and password.');
+      setError('Please provide both resident email and password.');
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const user = await login(email, password);
-      if (user.role === 'ADMIN') {
-        // If an admin logs into resident portal, give them option or route to dashboard
-        navigate('/admin/dashboard');
-      } else {
+      const user = await login(email.trim(), password, 'RESIDENT');
+      if (user.role === 'RESIDENT') {
         navigate('/resident/dashboard');
+      } else {
+        logout();
+        setError('Access denied: This portal is for Residents only. Apartment Owners/Administrators must use the Owner Login page.');
       }
     } catch (err) {
       setError(
-        err.response?.data?.message || 'Invalid resident credentials or authentication error.'
+        err.response?.data?.message || 'Invalid resident credentials. Please check your email and password.'
       );
     } finally {
       setSubmitting(false);

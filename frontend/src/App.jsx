@@ -59,6 +59,8 @@ function App() {
           <Route path="/resident/register" element={<ResidentRegister />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/register" element={<AdminRegister />} />
+          <Route path="/owner/login" element={<Navigate to="/admin/login" replace />} />
+          <Route path="/owner/register" element={<Navigate to="/admin/register" replace />} />
 
           {/* Admin Application Routes */}
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>

@@ -162,4 +162,134 @@ class AuthServiceTest {
 
         assertThrows(UnauthorizedException.class, () -> authService.login(loginRequest));
     }
+
+    @Test
+    void login_Owner_Success_WhenUserIsAdmin() {
+        LoginRequest ownerReq = LoginRequest.builder()
+                .email("admin@smartwater.com")
+                .password("password123")
+                .role(Role.ADMIN)
+                .build();
+
+        when(userRepository.findByEmail("admin@smartwater.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("password123", user.getPasswordHash())).thenReturn(true);
+        when(tokenProvider.generateToken(user.getEmail(), user.getRole())).thenReturn("jwt_admin_token");
+
+        AuthResponse response = authService.login(ownerReq);
+
+        assertNotNull(response);
+        assertEquals("jwt_admin_token", response.getToken());
+        assertEquals(Role.ADMIN, response.getUser().getRole());
+    }
+
+    @Test
+    void login_Owner_RejectsResidentAccount_ThrowsUnauthorizedException() {
+        User residentUser = User.builder()
+                .id(2L)
+                .name("Resident User")
+                .email("resident@smartwater.com")
+                .passwordHash("encoded_hash")
+                .role(Role.RESIDENT)
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        LoginRequest ownerAttempt = LoginRequest.builder()
+                .email("resident@smartwater.com")
+                .password("password123")
+                .role(Role.ADMIN)
+                .build();
+
+        when(userRepository.findByEmail("resident@smartwater.com")).thenReturn(Optional.of(residentUser));
+        when(passwordEncoder.matches("password123", residentUser.getPasswordHash())).thenReturn(true);
+
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> authService.login(ownerAttempt));
+        assertTrue(ex.getMessage().contains("Access denied: This account is registered as a Resident"));
+        verify(tokenProvider, never()).generateToken(any(), any());
+    }
+
+    @Test
+    void login_Resident_Success_WhenUserIsResident() {
+        User residentUser = User.builder()
+                .id(2L)
+                .name("Resident User")
+                .email("resident@smartwater.com")
+                .passwordHash("encoded_hash")
+                .role(Role.RESIDENT)
+                .status(UserStatus.ACTIVE)
+                .build();
+
+        LoginRequest residentReq = LoginRequest.builder()
+                .email("resident@smartwater.com")
+                .password("password123")
+                .role(Role.RESIDENT)
+                .build();
+
+        when(userRepository.findByEmail("resident@smartwater.com")).thenReturn(Optional.of(residentUser));
+        when(passwordEncoder.matches("password123", residentUser.getPasswordHash())).thenReturn(true);
+        when(tokenProvider.generateToken(residentUser.getEmail(), residentUser.getRole())).thenReturn("jwt_resident_token");
+
+        AuthResponse response = authService.login(residentReq);
+
+        assertNotNull(response);
+        assertEquals("jwt_resident_token", response.getToken());
+        assertEquals(Role.RESIDENT, response.getUser().getRole());
+    }
+
+    @Test
+    void login_Resident_RejectsAdminAccount_ThrowsUnauthorizedException() {
+        LoginRequest residentAttempt = LoginRequest.builder()
+                .email("admin@smartwater.com")
+                .password("password123")
+                .role(Role.RESIDENT)
+                .build();
+
+        when(userRepository.findByEmail("admin@smartwater.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("password123", user.getPasswordHash())).thenReturn(true);
+
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> authService.login(residentAttempt));
+        assertTrue(ex.getMessage().contains("Access denied: This portal is for Residents only"));
+        verify(tokenProvider, never()).generateToken(any(), any());
+    }
+
+    @Test
+    void login_EmailNormalization_Success() {
+        LoginRequest unnormalizedReq = LoginRequest.builder()
+                .email("  ADMIN@SMARTWATER.COM  ")
+                .password("password123")
+                .build();
+
+        when(userRepository.findByEmail("admin@smartwater.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("password123", user.getPasswordHash())).thenReturn(true);
+        when(tokenProvider.generateToken(user.getEmail(), user.getRole())).thenReturn("jwt_token");
+
+        AuthResponse response = authService.login(unnormalizedReq);
+
+        assertNotNull(response);
+        assertEquals("admin@smartwater.com", response.getUser().getEmail());
+        verify(userRepository).findByEmail("admin@smartwater.com");
+    }
+
+    @Test
+    void login_InactiveUser_ThrowsUnauthorizedException() {
+        User inactiveUser = User.builder()
+                .id(3L)
+                .name("Inactive User")
+                .email("inactive@smartwater.com")
+                .passwordHash("encoded_hash")
+                .role(Role.RESIDENT)
+                .status(UserStatus.INACTIVE)
+                .build();
+
+        LoginRequest inactiveReq = LoginRequest.builder()
+                .email("inactive@smartwater.com")
+                .password("password123")
+                .build();
+
+        when(userRepository.findByEmail("inactive@smartwater.com")).thenReturn(Optional.of(inactiveUser));
+        when(passwordEncoder.matches("password123", inactiveUser.getPasswordHash())).thenReturn(true);
+
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> authService.login(inactiveReq));
+        assertTrue(ex.getMessage().contains("inactive"));
+        verify(tokenProvider, never()).generateToken(any(), any());
+    }
 }

@@ -24,7 +24,7 @@ const AdminLogin = () => {
     setSubmitting(true);
 
     try {
-      const user = await login(email.trim(), password);
+      const user = await login(email.trim(), password, 'ADMIN');
       if (user.role === 'ADMIN') {
         navigate('/admin/dashboard');
       } else {
