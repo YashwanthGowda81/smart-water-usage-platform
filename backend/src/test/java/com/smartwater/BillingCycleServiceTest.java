@@ -90,4 +90,35 @@ class BillingCycleServiceTest {
 
         assertThrows(ResourceNotFoundException.class, () -> billingCycleService.getBillingCycle(99L));
     }
+
+    @Test
+    void calculateBills_WhenCycleIsFinalized_ThrowsInvalidReadingException() {
+        BillingCycle finalizedCycle = BillingCycle.builder()
+                .id(2L)
+                .apartmentId(10L)
+                .periodStart(LocalDate.of(2026, 3, 1))
+                .periodEnd(LocalDate.of(2026, 3, 31))
+                .status(BillingCycleStatus.FINALIZED)
+                .build();
+        when(billingCycleRepository.findById(2L)).thenReturn(Optional.of(finalizedCycle));
+
+        assertThrows(com.smartwater.exception.InvalidReadingException.class, () -> billingCycleService.calculateBills(2L));
+    }
+
+    @Test
+    void archiveBillingCycle_WhenFinalized_ChangesStatusToArchived() {
+        BillingCycle finalizedCycle = BillingCycle.builder()
+                .id(3L)
+                .apartmentId(10L)
+                .periodStart(LocalDate.of(2026, 3, 1))
+                .periodEnd(LocalDate.of(2026, 3, 31))
+                .status(BillingCycleStatus.FINALIZED)
+                .build();
+        when(billingCycleRepository.findById(3L)).thenReturn(Optional.of(finalizedCycle));
+        when(billingCycleRepository.save(any(BillingCycle.class))).thenAnswer(i -> i.getArgument(0));
+
+        BillingCycleDto archived = billingCycleService.archiveBillingCycle(3L);
+
+        assertEquals(BillingCycleStatus.ARCHIVED, archived.getStatus());
+    }
 }

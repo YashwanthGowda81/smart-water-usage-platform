@@ -95,23 +95,23 @@ const ResidentBills = () => {
                     <tr>
                       <td><strong>Individual Metered Water Consumption</strong></td>
                       <td>{b.meteredConsumptionKl} kL (Tiered Tariff Rate Math)</td>
-                      <td>${parseFloat(b.meteredTariffCharge).toFixed(2)}</td>
+                      <td>${(parseFloat(b.progressiveTariffCharge ?? b.meteredTariffCharge ?? 0) || 0).toFixed(2)}</td>
                     </tr>
                     <tr>
                       <td><strong>Shared Common Area Water Allocation</strong></td>
                       <td>Proportional / Area-based Distribution</td>
-                      <td>${parseFloat(b.sharedCostAllocation).toFixed(2)}</td>
+                      <td>${(parseFloat(b.sharedCostAllocation ?? 0) || 0).toFixed(2)}</td>
                     </tr>
-                    {parseFloat(b.penaltyAmount) > 0 && (
+                    {parseFloat(b.penaltyAmount || b.adjustments || 0) > 0 && (
                       <tr>
                         <td style={{ color: '#DC2626' }}><strong>Overdue Penalty Charge</strong></td>
-                        <td>Late Payment Fee</td>
-                        <td style={{ color: '#DC2626' }}>${parseFloat(b.penaltyAmount).toFixed(2)}</td>
+                        <td>Late Payment Fee / Adjustment</td>
+                        <td style={{ color: '#DC2626' }}>${(parseFloat(b.penaltyAmount || b.adjustments || 0) || 0).toFixed(2)}</td>
                       </tr>
                     )}
                     <tr style={{ background: '#F8FAFC', fontWeight: 'bold' }}>
                       <td colSpan="2">TOTAL MONTHLY WATER BILL AMOUNT</td>
-                      <td style={{ color: 'var(--primary-blue)', fontSize: '1.1rem' }}>${parseFloat(b.totalAmount).toFixed(2)}</td>
+                      <td style={{ color: 'var(--primary-blue)', fontSize: '1.1rem' }}>${(parseFloat(b.totalPayable ?? b.totalAmount ?? 0) || 0).toFixed(2)}</td>
                     </tr>
                   </tbody>
                 </table>

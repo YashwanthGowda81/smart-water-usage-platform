@@ -10,4 +10,5 @@ import java.util.List;
 public interface AnomalyEventRepository extends JpaRepository<AnomalyEvent, Long> {
     List<AnomalyEvent> findByHouseholdIdOrderByReadingDateDesc(Long householdId);
     List<AnomalyEvent> findByStatusOrderByReadingDateDesc(String status);
+    boolean existsByHouseholdIdAndReadingDateAndEventType(Long householdId, java.time.LocalDate readingDate, String eventType);
 }

@@ -66,16 +66,16 @@ public class BillingCycleService {
     }
 
     @Transactional
-    public BillingCycleDto finalizeBillingCycle(Long cycleId) {
+    public BillingCycleDto calculateBills(Long cycleId) {
         BillingCycle cycle = billingCycleRepository.findById(cycleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Billing cycle not found with ID: " + cycleId));
 
         if (cycle.getStatus() == BillingCycleStatus.FINALIZED || cycle.getStatus() == BillingCycleStatus.ARCHIVED) {
-            throw new InvalidReadingException("Billing cycle is already finalized or archived.");
+            throw new InvalidReadingException("Cannot recalculate bills: Billing cycle is already finalized or archived.");
         }
 
-        cycle.setStatus(BillingCycleStatus.CALCULATING);
-        billingCycleRepository.save(cycle);
+        // Clean up any previously calculated unfinalized bills
+        householdBillRepository.deleteByBillingCycleId(cycleId);
 
         // Fetch bulk water purchases in period
         List<BulkWaterPurchase> purchases = purchaseRepository.findByApartmentIdAndPurchaseDateBetween(
@@ -160,10 +160,40 @@ public class BillingCycleService {
         }
 
         cycle.setTotalConsumptionKl(totalConsumption);
-        cycle.setStatus(BillingCycleStatus.FINALIZED);
+        cycle.setStatus(BillingCycleStatus.CALCULATING);
 
+        BillingCycle savedCycle = billingCycleRepository.save(cycle);
+        return mapToDto(savedCycle);
+    }
+
+    @Transactional
+    public BillingCycleDto finalizeBillingCycle(Long cycleId) {
+        BillingCycle cycle = billingCycleRepository.findById(cycleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Billing cycle not found with ID: " + cycleId));
+
+        if (cycle.getStatus() == BillingCycleStatus.FINALIZED || cycle.getStatus() == BillingCycleStatus.ARCHIVED) {
+            throw new InvalidReadingException("Billing cycle is already finalized or archived.");
+        }
+
+        // If cycle was still OPEN, calculate bills first
+        if (cycle.getStatus() == BillingCycleStatus.OPEN) {
+            calculateBills(cycleId);
+            cycle = billingCycleRepository.findById(cycleId).orElseThrow();
+        }
+
+        cycle.setStatus(BillingCycleStatus.FINALIZED);
         BillingCycle finalizedCycle = billingCycleRepository.save(cycle);
         return mapToDto(finalizedCycle);
+    }
+
+    @Transactional
+    public BillingCycleDto archiveBillingCycle(Long cycleId) {
+        BillingCycle cycle = billingCycleRepository.findById(cycleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Billing cycle not found with ID: " + cycleId));
+
+        cycle.setStatus(BillingCycleStatus.ARCHIVED);
+        BillingCycle archivedCycle = billingCycleRepository.save(cycle);
+        return mapToDto(archivedCycle);
     }
 
     public List<HouseholdBillDto> getBillsByCycle(Long cycleId) {

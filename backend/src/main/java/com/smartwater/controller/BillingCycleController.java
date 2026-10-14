@@ -32,10 +32,30 @@ public class BillingCycleController {
         return ResponseEntity.ok(cycles);
     }
 
+    @GetMapping("/{cycleId}")
+    public ResponseEntity<BillingCycleDto> getBillingCycleById(@PathVariable Long cycleId) {
+        BillingCycleDto cycle = billingCycleService.getBillingCycle(cycleId);
+        return ResponseEntity.ok(cycle);
+    }
+
+    @PostMapping("/{cycleId}/calculate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BillingCycleDto> calculateBills(@PathVariable Long cycleId) {
+        BillingCycleDto calculated = billingCycleService.calculateBills(cycleId);
+        return ResponseEntity.ok(calculated);
+    }
+
     @PostMapping("/{cycleId}/finalize")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BillingCycleDto> finalizeBillingCycle(@PathVariable Long cycleId) {
         BillingCycleDto finalized = billingCycleService.finalizeBillingCycle(cycleId);
         return ResponseEntity.ok(finalized);
+    }
+
+    @PostMapping("/{cycleId}/archive")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BillingCycleDto> archiveBillingCycle(@PathVariable Long cycleId) {
+        BillingCycleDto archived = billingCycleService.archiveBillingCycle(cycleId);
+        return ResponseEntity.ok(archived);
     }
 }

@@ -43,10 +43,11 @@ public class TariffPlanService {
 
         List<TariffTier> tiers = new ArrayList<>();
         if (request.getTiers() != null) {
+            int autoTierNum = 1;
             for (TariffTierDto tierDto : request.getTiers()) {
                 TariffTier tier = TariffTier.builder()
                         .tariffPlan(savedPlan)
-                        .tierNumber(tierDto.getTierNumber())
+                        .tierNumber(tierDto.getTierNumber() != null ? tierDto.getTierNumber() : autoTierNum++)
                         .minKl(tierDto.getMinKl() != null ? tierDto.getMinKl() : BigDecimal.ZERO)
                         .maxKl(tierDto.getMaxKl())
                         .ratePerKl(tierDto.getRatePerKl() != null ? tierDto.getRatePerKl() : BigDecimal.ZERO)

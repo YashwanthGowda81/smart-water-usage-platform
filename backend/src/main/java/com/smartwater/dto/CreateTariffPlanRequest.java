@@ -17,6 +17,7 @@ public class CreateTariffPlanRequest {
     private String name;
 
     @NotNull(message = "Effective start date is required")
+    @com.fasterxml.jackson.annotation.JsonAlias({"effectiveFrom", "effectiveStartDate"})
     private LocalDate effectiveStartDate;
 
     private LocalDate effectiveEndDate;

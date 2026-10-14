@@ -79,6 +79,12 @@ public class WaterUsageService {
                 .collect(Collectors.toList());
     }
 
+    public List<WaterUsageLogDto> getUsageByHousehold(Long householdId) {
+        return waterUsageLogRepository.findByHouseholdIdOrderByReadingDateDesc(householdId).stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
     public List<WaterUsageLogDto> getAllUsageLogs() {
         return waterUsageLogRepository.findAll().stream()
                 .map(this::mapToDto)

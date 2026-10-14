@@ -21,6 +21,7 @@ import java.util.List;
 public class HouseholdController {
 
     private final HouseholdService householdService;
+    private final com.smartwater.repository.UserRepository userRepository;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -31,8 +32,18 @@ public class HouseholdController {
     }
 
     @GetMapping
-    @Operation(summary = "Get list of all households (optional filter by apartmentId)")
-    public ResponseEntity<List<HouseholdDto>> getAllHouseholds(@RequestParam(required = false) Long apartmentId) {
+    @Operation(summary = "Get list of all households (optional filter by apartmentId; filtered to household for residents)")
+    public ResponseEntity<List<HouseholdDto>> getAllHouseholds(
+            @RequestParam(required = false) Long apartmentId,
+            org.springframework.security.core.Authentication authentication) {
+        com.smartwater.entity.User user = getAuthenticatedUser(authentication);
+        if (user != null && user.getRole() == com.smartwater.entity.Role.RESIDENT) {
+            if (user.getHouseholdId() == null) {
+                return ResponseEntity.ok(java.util.Collections.emptyList());
+            }
+            HouseholdDto hh = householdService.getHouseholdById(user.getHouseholdId());
+            return ResponseEntity.ok(java.util.List.of(hh));
+        }
         if (apartmentId != null) {
             return ResponseEntity.ok(householdService.getHouseholdsByApartment(apartmentId));
         }
@@ -40,8 +51,16 @@ public class HouseholdController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get household details by ID")
-    public ResponseEntity<HouseholdDto> getHouseholdById(@PathVariable Long id) {
+    @Operation(summary = "Get household details by ID (Admins or assigned Resident only)")
+    public ResponseEntity<HouseholdDto> getHouseholdById(
+            @PathVariable Long id,
+            org.springframework.security.core.Authentication authentication) {
+        com.smartwater.entity.User user = getAuthenticatedUser(authentication);
+        if (user != null && user.getRole() == com.smartwater.entity.Role.RESIDENT) {
+            if (user.getHouseholdId() == null || !user.getHouseholdId().equals(id)) {
+                throw new com.smartwater.exception.UnauthorizedException("Access denied: Residents can only access their own household details.");
+            }
+        }
         return ResponseEntity.ok(householdService.getHouseholdById(id));
     }
 
@@ -58,5 +77,12 @@ public class HouseholdController {
     public ResponseEntity<Void> deleteHousehold(@PathVariable Long id) {
         householdService.deleteHousehold(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private com.smartwater.entity.User getAuthenticatedUser(org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return null;
+        }
+        return userRepository.findByEmail(auth.getName().trim().toLowerCase()).orElse(null);
     }
 }

@@ -29,7 +29,7 @@ public class BenchmarkingService {
 
         // Current household consumption in last 30 days
         BigDecimal hhUsage = waterUsageLogRepository.calculateConsumptionByHouseholdAndDateRange(householdId, startDate, endDate);
-        BigDecimal householdUsage = (hhUsage != null && hhUsage.compareTo(BigDecimal.ZERO) > 0) ? hhUsage : BigDecimal.valueOf(15.0);
+        BigDecimal householdUsage = (hhUsage != null) ? hhUsage : BigDecimal.ZERO;
 
         // Apartment total households & usage
         Long apId = household.getApartment() != null ? household.getApartment().getId() : null;
@@ -47,7 +47,7 @@ public class BenchmarkingService {
 
         BigDecimal apartmentAvg = count > 0
                 ? totalApUsage.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP)
-                : BigDecimal.valueOf(18.5);
+                : BigDecimal.ZERO;
 
         BigDecimal diff = householdUsage.subtract(apartmentAvg);
         BigDecimal pctDiff = apartmentAvg.compareTo(BigDecimal.ZERO) > 0
@@ -57,7 +57,10 @@ public class BenchmarkingService {
         String rating = "AVERAGE";
         String rec = "Your water consumption is aligned with your community average.";
 
-        if (diff.compareTo(BigDecimal.valueOf(-3.0)) < 0) {
+        if (count == 0 && householdUsage.compareTo(BigDecimal.ZERO) == 0) {
+            rating = "INSUFFICIENT_DATA";
+            rec = "No water consumption records logged in the database for the last 30 days yet.";
+        } else if (diff.compareTo(BigDecimal.valueOf(-3.0)) < 0) {
             rating = "EXCELLENT";
             rec = "Great job! Your household consumes less water than average.";
         } else if (diff.compareTo(BigDecimal.valueOf(3.0)) > 0) {

@@ -14,7 +14,12 @@ import java.math.BigDecimal;
 public class TariffTierDto {
     private Long id;
     private Integer tierNumber;
+
+    @com.fasterxml.jackson.annotation.JsonAlias({"minVolumeKl", "minKl"})
     private BigDecimal minKl;
+
+    @com.fasterxml.jackson.annotation.JsonAlias({"maxVolumeKl", "maxKl"})
     private BigDecimal maxKl;
+
     private BigDecimal ratePerKl;
 }

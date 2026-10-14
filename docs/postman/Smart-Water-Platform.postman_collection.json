@@ -1,0 +1,438 @@
+{
+  "info": {
+    "name": "Smart Water Platform API Collection",
+    "_postman_id": "b96a1e38-7f41-45ce-939e-21ef65dcae91",
+    "description": "Comprehensive Postman Collection covering all endpoints and security checks across Phase 1 to Phase 4.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Authentication & Registration",
+      "item": [
+        {
+          "name": "Register Admin (Provisioning with Secret)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"fullName\": \"System Administrator\",\n  \"role\": \"ADMIN\",\n  \"apartmentId\": {{apartmentId}},\n  \"adminSecret\": \"{{adminSecretKey}}\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "Register Admin - Invalid Secret (Escalation Defense)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"intruder@smartwater.local\",\n  \"password\": \"Hacker123!\",\n  \"fullName\": \"Intruder Escalation\",\n  \"role\": \"ADMIN\",\n  \"adminSecret\": \"WRONG_SECRET\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"]}
+          }
+        },
+        {
+          "name": "Login Admin (Extracts Bearer Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.environment.set(\"token\", jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "Get Current User Profile (/api/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "auth", "me"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Apartment & Household Management",
+      "item": [
+        {
+          "name": "Create Apartment (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Green Meadows Community\",\n  \"address\": \"45 Lakeview Blvd, Eco City\",\n  \"totalUnits\": 50\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/apartments", "host": ["{{baseUrl}}"], "path": ["api", "apartments"]}
+          }
+        },
+        {
+          "name": "List All Apartments",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/apartments", "host": ["{{baseUrl}}"], "path": ["api", "apartments"]}
+          }
+        },
+        {
+          "name": "Create Household Unit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apartmentId\": {{apartmentId}},\n  \"flatNumber\": \"A-101\",\n  \"occupancy\": 4,\n  \"areaSqft\": 1250.00,\n  \"metered\": true\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/households", "host": ["{{baseUrl}}"], "path": ["api", "households"]}
+          }
+        },
+        {
+          "name": "Get Households in Apartment",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/households/apartment/{{apartmentId}}", "host": ["{{baseUrl}}"], "path": ["api", "households", "apartment", "{{apartmentId}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Meter Management",
+      "item": [
+        {
+          "name": "Register Water Meter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"householdId\": {{householdId}},\n  \"meterNumber\": \"{{meterNumber}}\",\n  \"installationDate\": \"2026-01-01\",\n  \"initialReading\": 0.000\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/meters", "host": ["{{baseUrl}}"], "path": ["api", "meters"]}
+          }
+        },
+        {
+          "name": "Get Meter by Number",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/meters/number/{{meterNumber}}", "host": ["{{baseUrl}}"], "path": ["api", "meters", "number", "{{meterNumber}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Water Usage Logs & Readings",
+      "item": [
+        {
+          "name": "Log Manual Reading",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meterNumber\": \"{{meterNumber}}\",\n  \"readingDate\": \"2026-03-31\",\n  \"currentReading\": 145.250\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/usage", "host": ["{{baseUrl}}"], "path": ["api", "usage"]}
+          }
+        },
+        {
+          "name": "Log Decreasing Reading (Continuity Validation Defense)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meterNumber\": \"{{meterNumber}}\",\n  \"readingDate\": \"2026-04-01\",\n  \"currentReading\": 100.000\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/usage", "host": ["{{baseUrl}}"], "path": ["api", "usage"]}
+          }
+        },
+        {
+          "name": "Get Water Reading CSV Template",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/usage/template", "host": ["{{baseUrl}}"], "path": ["api", "usage", "template"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Tariff Configuration",
+      "item": [
+        {
+          "name": "Create Progressive Tariff Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apartmentId\": {{apartmentId}},\n  \"name\": \"Progressive Tier Plan Q1\",\n  \"effectiveFrom\": \"2026-01-01\",\n  \"tiers\": [\n    {\n      \"minVolumeKl\": 0,\n      \"maxVolumeKl\": 10,\n      \"ratePerKl\": 20.00\n    },\n    {\n      \"minVolumeKl\": 10,\n      \"maxVolumeKl\": 25,\n      \"ratePerKl\": 35.00\n    },\n    {\n      \"minVolumeKl\": 25,\n      \"maxVolumeKl\": null,\n      \"ratePerKl\": 50.00\n    }\n  ]\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/tariff-plans", "host": ["{{baseUrl}}"], "path": ["api", "tariff-plans"]}
+          }
+        },
+        {
+          "name": "Get Active Tariff Plans by Apartment",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/tariff-plans/apartment/{{apartmentId}}", "host": ["{{baseUrl}}"], "path": ["api", "tariff-plans", "apartment", "{{apartmentId}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Bulk Water Procurement",
+      "item": [
+        {
+          "name": "Record Bulk Tanker Water Purchase",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apartmentId\": {{apartmentId}},\n  \"sourceType\": \"TANKER\",\n  \"supplierName\": \"Aquaflow Bulk Logistics\",\n  \"purchaseDate\": \"2026-03-25\",\n  \"volumeKl\": 40.0,\n  \"totalCost\": 1200.00,\n  \"invoiceNumber\": \"INV-TK-2026-081\",\n  \"notes\": \"Emergency tanker supply during municipal outage\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/bulk-purchases", "host": ["{{baseUrl}}"], "path": ["api", "bulk-purchases"]}
+          }
+        },
+        {
+          "name": "List Bulk Water Purchases",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/bulk-purchases/apartment/{{apartmentId}}", "host": ["{{baseUrl}}"], "path": ["api", "bulk-purchases", "apartment", "{{apartmentId}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Billing Cycle & Cost Allocation",
+      "item": [
+        {
+          "name": "Open New Billing Cycle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apartmentId\": {{apartmentId}},\n  \"periodStart\": \"2026-03-01\",\n  \"periodEnd\": \"2026-03-31\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/billing-cycles", "host": ["{{baseUrl}}"], "path": ["api", "billing-cycles"]}
+          }
+        },
+        {
+          "name": "Calculate & Preview Bills for Cycle",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/billing-cycles/{{billingCycleId}}/calculate", "host": ["{{baseUrl}}"], "path": ["api", "billing-cycles", "{{billingCycleId}}", "calculate"]}
+          }
+        },
+        {
+          "name": "Finalize Billing Cycle",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/billing-cycles/{{billingCycleId}}/finalize", "host": ["{{baseUrl}}"], "path": ["api", "billing-cycles", "{{billingCycleId}}", "finalize"]}
+          }
+        },
+        {
+          "name": "Archive Billing Cycle",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/billing-cycles/{{billingCycleId}}/archive", "host": ["{{baseUrl}}"], "path": ["api", "billing-cycles", "{{billingCycleId}}", "archive"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 Invoices & PDF Statements",
+      "item": [
+        {
+          "name": "Get Resident My-Bills (/api/bills/my-bills)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/bills/my-bills", "host": ["{{baseUrl}}"], "path": ["api", "bills", "my-bills"]}
+          }
+        },
+        {
+          "name": "Get Bill by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/bills/{{billId}}", "host": ["{{baseUrl}}"], "path": ["api", "bills", "{{billId}}"]}
+          }
+        },
+        {
+          "name": "Download Itemized PDF Invoice",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/bills/{{billId}}/pdf", "host": ["{{baseUrl}}"], "path": ["api", "bills", "{{billId}}", "pdf"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 Anomaly Detection & Alerts",
+      "item": [
+        {
+          "name": "Trigger Anomaly Evaluation for Household",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/anomalies/evaluate/{{householdId}}", "host": ["{{baseUrl}}"], "path": ["api", "anomalies", "evaluate", "{{householdId}}"]}
+          }
+        },
+        {
+          "name": "Get Anomaly Events by Household",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/anomalies/household/{{householdId}}", "host": ["{{baseUrl}}"], "path": ["api", "anomalies", "household", "{{householdId}}"]}
+          }
+        },
+        {
+          "name": "Update Anomaly Status (Investigated / Resolved)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"},
+              {"key": "Content-Type", "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"RESOLVED\"\n}"
+            },
+            "url": {"raw": "{{baseUrl}}/api/anomalies/1/status", "host": ["{{baseUrl}}"], "path": ["api", "anomalies", "1", "status"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 Benchmarking & Recommendations",
+      "item": [
+        {
+          "name": "Get Resident My-Household Benchmark",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/benchmarking/my-household", "host": ["{{baseUrl}}"], "path": ["api", "benchmarking", "my-household"]}
+          }
+        },
+        {
+          "name": "Get Household Benchmark by ID (Admin or Assigned Resident)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/benchmarking/household/{{householdId}}", "host": ["{{baseUrl}}"], "path": ["api", "benchmarking", "household", "{{householdId}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 Notifications",
+      "item": [
+        {
+          "name": "Get Resident My-Notifications",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/notifications/my-notifications", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "my-notifications"]}
+          }
+        },
+        {
+          "name": "Mark Single Notification as Read",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/notifications/1/read", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "1", "read"]}
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/notifications/read-all", "host": ["{{baseUrl}}"], "path": ["api", "notifications", "read-all"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 Negative & Security Tests",
+      "item": [
+        {
+          "name": "Cross-Household Bill Access (Should Return 403 Forbidden)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/bills/household/999", "host": ["{{baseUrl}}"], "path": ["api", "bills", "household", "999"]}
+          }
+        },
+        {
+          "name": "Unauthenticated Endpoint Access (Should Return 401 Unauthorized)",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{baseUrl}}/api/meters", "host": ["{{baseUrl}}"], "path": ["api", "meters"]}
+          }
+        },
+        {
+          "name": "Recalculate Finalized Cycle (Should Return 400 Bad Request)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "{{baseUrl}}/api/billing-cycles/{{billingCycleId}}/calculate", "host": ["{{baseUrl}}"], "path": ["api", "billing-cycles", "{{billingCycleId}}", "calculate"]}
+          }
+        }
+      ]
+    }
+  ]
+}

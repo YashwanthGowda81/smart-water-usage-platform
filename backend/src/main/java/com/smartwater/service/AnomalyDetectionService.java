@@ -57,39 +57,54 @@ public class AnomalyDetectionService {
         double latestValue = latest.getConsumption().doubleValue();
 
         if (latestValue > threshold && latestValue > 5.0) { // Require minimum 5 kL threshold to avoid noise
-            AnomalyEvent event = AnomalyEvent.builder()
-                    .meterId(latest.getMeter() != null ? latest.getMeter().getId() : null)
-                    .householdId(householdId)
-                    .eventType("POTENTIAL_LEAK")
-                    .readingDate(latest.getReadingDate())
-                    .observedValue(BigDecimal.valueOf(latestValue).setScale(2, RoundingMode.HALF_UP))
-                    .baselineMean(BigDecimal.valueOf(mean).setScale(2, RoundingMode.HALF_UP))
-                    .baselineStddev(BigDecimal.valueOf(stddev).setScale(2, RoundingMode.HALF_UP))
-                    .thresholdValue(BigDecimal.valueOf(threshold).setScale(2, RoundingMode.HALF_UP))
-                    .status("OPEN")
-                    .build();
+            boolean alreadyExists = anomalyEventRepository.existsByHouseholdIdAndReadingDateAndEventType(
+                    householdId, latest.getReadingDate(), "POTENTIAL_LEAK"
+            );
 
-            anomalyEventRepository.save(event);
+            if (!alreadyExists) {
+                AnomalyEvent event = AnomalyEvent.builder()
+                        .meterId(latest.getMeter() != null ? latest.getMeter().getId() : null)
+                        .householdId(householdId)
+                        .eventType("POTENTIAL_LEAK")
+                        .readingDate(latest.getReadingDate())
+                        .observedValue(BigDecimal.valueOf(latestValue).setScale(2, RoundingMode.HALF_UP))
+                        .baselineMean(BigDecimal.valueOf(mean).setScale(2, RoundingMode.HALF_UP))
+                        .baselineStddev(BigDecimal.valueOf(stddev).setScale(2, RoundingMode.HALF_UP))
+                        .thresholdValue(BigDecimal.valueOf(threshold).setScale(2, RoundingMode.HALF_UP))
+                        .status("OPEN")
+                        .build();
 
-            // Notify resident user associated with this household
-            List<User> residents = userRepository.findByHouseholdId(householdId);
-            Household hh = householdRepository.findById(householdId).orElse(null);
-            String flatNum = hh != null ? hh.getFlatNumber() : "Unit";
+                anomalyEventRepository.save(event);
 
-            for (User r : residents) {
-                notificationService.createNotification(
-                        r.getId(),
-                        hh != null && hh.getApartment() != null ? hh.getApartment().getId() : null,
-                        householdId,
-                        "ANOMALY_ALERT",
-                        "⚠️ Potential Water Leak Alert - Flat " + flatNum,
-                        String.format("Abnormal water consumption of %.2f kL observed on %s. Historical baseline: %.2f kL (Threshold: %.2f kL). Please check plumbing for leaks.",
-                                latestValue, latest.getReadingDate(), mean, threshold)
-                );
+                // Notify resident user associated with this household
+                List<User> residents = userRepository.findByHouseholdId(householdId);
+                Household hh = householdRepository.findById(householdId).orElse(null);
+                String flatNum = hh != null ? hh.getFlatNumber() : "Unit";
+
+                for (User r : residents) {
+                    notificationService.createNotification(
+                            r.getId(),
+                            hh != null && hh.getApartment() != null ? hh.getApartment().getId() : null,
+                            householdId,
+                            "ANOMALY_ALERT",
+                            "⚠️ Potential Water Leak Alert - Flat " + flatNum,
+                            String.format("Abnormal water consumption of %.2f kL observed on %s. Historical baseline: %.2f kL (Threshold: %.2f kL). Please check plumbing for leaks.",
+                                    latestValue, latest.getReadingDate(), mean, threshold)
+                    );
+                }
             }
         }
 
         return getAnomaliesByHousehold(householdId);
+    }
+
+    @Transactional
+    public AnomalyEventDto updateAnomalyStatus(Long anomalyId, String status) {
+        AnomalyEvent event = anomalyEventRepository.findById(anomalyId)
+                .orElseThrow(() -> new com.smartwater.exception.ResourceNotFoundException("Anomaly event not found with ID: " + anomalyId));
+        event.setStatus(status != null ? status.trim().toUpperCase() : "RESOLVED");
+        AnomalyEvent updated = anomalyEventRepository.save(event);
+        return mapToDto(updated);
     }
 
     public List<AnomalyEventDto> getAnomaliesByHousehold(Long householdId) {

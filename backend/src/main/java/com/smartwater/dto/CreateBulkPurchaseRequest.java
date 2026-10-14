@@ -19,6 +19,7 @@ public class CreateBulkPurchaseRequest {
     private LocalDate purchaseDate;
 
     @NotBlank(message = "Supplier is required")
+    @com.fasterxml.jackson.annotation.JsonAlias({"supplierName", "supplier"})
     private String supplier;
 
     private PurchaseType purchaseType;

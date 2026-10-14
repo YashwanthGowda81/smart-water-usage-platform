@@ -12,4 +12,5 @@ public interface HouseholdBillRepository extends JpaRepository<HouseholdBill, Lo
     List<HouseholdBill> findByBillingCycleId(Long billingCycleId);
     List<HouseholdBill> findByHouseholdIdOrderByCreatedAtDesc(Long householdId);
     Optional<HouseholdBill> findByBillingCycleIdAndHouseholdId(Long billingCycleId, Long householdId);
+    void deleteByBillingCycleId(Long billingCycleId);
 }
